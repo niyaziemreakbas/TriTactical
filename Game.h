@@ -15,4 +15,6 @@ private:
 
     sf::RenderWindow window;
     GameManager gameManager;
+    //UIManager uiManager;
+
 };

@@ -22,7 +22,7 @@ private:
     sf::Text ownerText;
     sf::Text typeText;
     sf::Text statsText;
-
+    sf::RectangleShape infoPanel;
     sf::RectangleShape endTurnButton;
     sf::Text endTurnText;
     sf::Text turnIndicatorText;

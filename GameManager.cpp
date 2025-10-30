@@ -162,10 +162,11 @@ void GameManager::handleClick(int mouseX, int mouseY)
 
             // Yeni duruma göre hareket alanýný hesapla.
             calculateMoveableCells(selectedSoldier);
+            uiManager.update(selectedSoldier, owners[currentPlayerIndex]->name);
+
         }
     }
 
-    uiManager.update(selectedSoldier, owners[currentPlayerIndex]->name);
 }
 
 void GameManager::draw(sf::RenderWindow& window)
@@ -198,6 +199,7 @@ void GameManager::draw(sf::RenderWindow& window)
             soldier.draw(window, tileSize, mapOffsetX - 1.5, mapOffsetY - 1.5);
         }
     }
+    uiManager.draw(window);
 }
 
 void GameManager::calculateMoveableCells(Soldier* soldier)

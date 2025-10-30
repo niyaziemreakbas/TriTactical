@@ -12,7 +12,7 @@ statsText(font, "", 20),     // statsText'i baþlat
 endTurnText(font, "End Turn", 24), // endTurnText'i baþlat
 turnIndicatorText(font, "", 28)
 {
-    //LoadFont(font, "Assets/RockwellNova.ttf");
+    LoadFont(font, "Assets/RockwellNova.ttf");
 
     std::cout << "Font Type :: " << font.getInfo().family;
 
@@ -25,17 +25,17 @@ turnIndicatorText(font, "", 28)
     // Owner Text
     ownerText.setCharacterSize(24); // Boyutunu ayarla
     ownerText.setFillColor(sf::Color::White);
-    ownerText.setPosition(sf::Vector2f(20.f, 20.f));
+    ownerText.setPosition(sf::Vector2f(20.f, 80.f));
 
     // Type Text
     typeText.setCharacterSize(20);
     typeText.setFillColor(sf::Color::Cyan);
-    typeText.setPosition(sf::Vector2f(20.f, 50.f));
+    typeText.setPosition(sf::Vector2f(20.f, 110.f));
 
     // Stats Text
     statsText.setCharacterSize(20);
     statsText.setFillColor(sf::Color::Yellow);
-    statsText.setPosition(sf::Vector2f(20.f, 80.f));
+    statsText.setPosition(sf::Vector2f(20.f, 140.f));
 
     // YENÝ KOD: "Turu Bitir" butonunu ayarla.
     endTurnButton.setSize(sf::Vector2f(150.f, 50.f));
@@ -44,11 +44,18 @@ turnIndicatorText(font, "", 28)
 
     endTurnText.setString("End Turn");
     endTurnText.setCharacterSize(24);
-    endTurnText.setPosition(sf::Vector2f(30, 30));
+    endTurnText.setPosition(sf::Vector2f(endTurnButton.getPosition().x + 10,
+        endTurnButton.getPosition().y + 10));
 
     turnIndicatorText.setCharacterSize(28);
     turnIndicatorText.setFillColor(sf::Color::White);
-    turnIndicatorText.setPosition(sf::Vector2f(10, 10)); // Ortaya yakýn
+    turnIndicatorText.setPosition(sf::Vector2f(1000, 10)); // Ortaya yakýn
+
+    infoPanel.setSize(sf::Vector2f(250.f, 120.f));
+    infoPanel.setFillColor(sf::Color(0, 0, 0, 150)); // Yarý þeffaf siyah
+    infoPanel.setOutlineColor(sf::Color::White);
+    infoPanel.setOutlineThickness(1.f);
+    infoPanel.setPosition(sf::Vector2f(20.f, 1366 - 140.f));
 
     std::cout << "UIManager initialized successfully.\n";
 }
@@ -100,6 +107,8 @@ void UIManager::update(Soldier* selectedSoldier, const std::string& currentPlaye
 
 void UIManager::draw(sf::RenderWindow& window)
 {
+    window.draw(infoPanel);
+
     window.draw(ownerText);
     window.draw(typeText);
     window.draw(statsText);
