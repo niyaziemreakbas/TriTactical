@@ -1,0 +1,10 @@
+﻿  Game.cpp
+D:\CppProjects\TriTactical\TriTactical\include\SFML\System\Exception.hpp(41,47): warning C4275: dll olmayan class 'std::runtime_error' arabirimi dll arabirimi class 'sf::Exception' için taban olarak kullanıldı
+  ('Game.cpp' kaynak dosyası derleniyor)
+      C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.43.34808\include\stdexcept(100,19):
+      'std::runtime_error' bildirimine bakın
+      D:\CppProjects\TriTactical\TriTactical\include\SFML\System\Exception.hpp(41,23):
+      'sf::Exception' bildirimine bakın
+  
+Game.obj : error LNK2001: çözümlenmemiş dış sembol "public: __cdecl GameManager::GameManager(void)" (??0GameManager@@QEAA@XZ)
+D:\CppProjects\TriTactical\TriTactical\x64\Release\TriTactical.exe : fatal error LNK1120: 1 çözümlenmemiş dışlar
