@@ -1,11 +1,22 @@
-﻿  UIManager.cpp
+﻿  GameManager.cpp
 D:\CppProjects\TriTactical\TriTactical\include\SFML\System\Exception.hpp(41,47): warning C4275: dll olmayan class 'std::runtime_error' arabirimi dll arabirimi class 'sf::Exception' için taban olarak kullanıldı
-  ('UIManager.cpp' kaynak dosyası derleniyor)
+  ('GameManager.cpp' kaynak dosyası derleniyor)
       C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.43.34808\include\stdexcept(100,19):
       'std::runtime_error' bildirimine bakın
       D:\CppProjects\TriTactical\TriTactical\include\SFML\System\Exception.hpp(41,23):
       'sf::Exception' bildirimine bakın
   
+D:\CppProjects\TriTactical\TriTactical\TriTactical\GameManager.cpp(194,73): warning C4244: 'bağımsız değişken': 'double' - 'float' dönüşümü; veri kaybı olabilir
+D:\CppProjects\TriTactical\TriTactical\TriTactical\GameManager.cpp(194,55): warning C4244: 'bağımsız değişken': 'double' - 'float' dönüşümü; veri kaybı olabilir
+  Soldier.cpp
+D:\CppProjects\TriTactical\TriTactical\include\SFML\System\Exception.hpp(41,47): warning C4275: dll olmayan class 'std::runtime_error' arabirimi dll arabirimi class 'sf::Exception' için taban olarak kullanıldı
+  ('Soldier.cpp' kaynak dosyası derleniyor)
+      C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.43.34808\include\stdexcept(100,19):
+      'std::runtime_error' bildirimine bakın
+      D:\CppProjects\TriTactical\TriTactical\include\SFML\System\Exception.hpp(41,23):
+      'sf::Exception' bildirimine bakın
+  
+  Kod Üretiliyor...
   TriTactical.vcxproj -> D:\CppProjects\TriTactical\TriTactical\x64\Debug\TriTactical.exe
   'pwsh.exe' is not recognized as an internal or external command,
   operable program or batch file.

@@ -27,11 +27,13 @@ public:
 
 	int getCurrentPoints() const { return currentMovementPoints; }
 
-	int setCurrentPoints(int points) { return currentMovementPoints = points; }
+	int setCurrentPoints(int points) { return currentMovementPoints += points; }
+
+    void setOwner(Owner* owner);
 
 private:
 
-    const int cost = 30;
+    int cost = 30;
     int movementPoints = 3;
 	int currentMovementPoints = movementPoints;
 

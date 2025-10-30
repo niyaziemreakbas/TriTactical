@@ -20,20 +20,31 @@ public:
     void draw(sf::RenderWindow& window);
 
     void endTurn();
+
+    Soldier* getSoldierAt(sf::Vector2i position) const;
+
+    float totalMapWidth;
+    float totalMapHeight;
+
 private:
     // Add a function to create the map.
     void generateMap(unsigned int windowWidth, unsigned int windowHeight);
 
-    int mapWidth, mapHeight;
-    float tileSize = 50.0f; 
-
     void calculateMoveableCells(Soldier* soldier);
+
+    void checkForCombat(Soldier* movedSoldier);
+
+    void resolveCombat(Soldier& attacker, Soldier& defender);
     
+    std::vector<sf::Vector2i> attackableCells;
     std::vector<sf::Vector2i> moveableCells;
 
     //Using for centering, soldier class needs
     float mapOffsetX = 0.f; 
     float mapOffsetY = 0.f;
+
+    int mapWidth, mapHeight;
+    float tileSize = 50.0f;
 
     std::vector<std::unique_ptr<Owner>> owners;
 

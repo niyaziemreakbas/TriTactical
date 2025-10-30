@@ -3,11 +3,23 @@
 #include <random> // better random number generation than rand().
 #include "Soldier.h"
 #include <iostream>
+#include <string>
 
 GameManager::GameManager(unsigned int windowWidth, unsigned int windowHeight)
 {
     generateMap(windowWidth, windowHeight);
 	createInitialUnits();
+}
+
+std::string soldierTypeToString(Soldier::Type type)
+{
+    switch (type)
+    {
+    case Soldier::Type::Square:   return "Square";
+    case Soldier::Type::Circle:   return "Circle";
+    case Soldier::Type::Triangle: return "Triangle";
+    default:                      return "Unknown";
+    }
 }
 
 void GameManager::generateMap(unsigned int windowWidth, unsigned int windowHeight)
@@ -22,8 +34,8 @@ void GameManager::generateMap(unsigned int windowWidth, unsigned int windowHeigh
     mapHeight = distribHeight(gen);
 
 	// Centering Map Logic
-    float totalMapWidth = mapWidth * tileSize;
-    float totalMapHeight = mapHeight * tileSize;
+    totalMapWidth = mapWidth * tileSize;
+    totalMapHeight = mapHeight * tileSize;
 
     mapOffsetX = (windowWidth - totalMapWidth) / 2.0f;
     mapOffsetY = (windowHeight - totalMapHeight) / 2.0f;
@@ -55,8 +67,6 @@ void GameManager::createInitialUnits()
     owners.push_back(std::make_unique<PlayerOwner>("Player", sf::Color::Blue));
     owners.push_back(std::make_unique<AIOwner>("AI 1", sf::Color::Red));
 
-    // 2. Askerleri doðrudan ilgili sahibin 'soldiers' vektörüne ekle.
-
     owners[0]->soldiers.emplace_back(owners[0].get(), Soldier::Type::Square, sf::Vector2i(1, 1));
 
     owners[1]->soldiers.emplace_back(owners[1].get(), Soldier::Type::Triangle, sf::Vector2i(mapWidth - 2, mapHeight - 2));
@@ -75,23 +85,7 @@ void GameManager::handleClick(int mouseX, int mouseY)
     int gridX = static_cast<int>((mouseX - mapOffsetX) / tileSize);
     int gridY = static_cast<int>((mouseY - mapOffsetY) / tileSize);
 
-    // 1. Týklanan hücrede bir asker var mý diye bul (deðiþiklik yok).
-    Soldier* clickedSoldier = nullptr;
-    if (gridX >= 0 && gridX < mapWidth && gridY >= 0 && gridY < mapHeight)
-    {
-        for (auto& owner : owners)
-        {
-            for (auto& soldier : owner->soldiers)
-            {
-                if (soldier.gridPosition.x == gridX && soldier.gridPosition.y == gridY)
-                {
-                    clickedSoldier = &soldier;
-                    break;
-                }
-            }
-            if (clickedSoldier) break;
-        }
-    }
+    Soldier* clickedSoldier = getSoldierAt({ gridX, gridY });
 
     // Durum A: Boþ bir hücreye týklandý.
     if (clickedSoldier == nullptr)
@@ -115,6 +109,8 @@ void GameManager::handleClick(int mouseX, int mouseY)
 
                 // Askerin pozisyonunu güncelle.
                 selectedSoldier->gridPosition = clickedCell;
+
+                checkForCombat(selectedSoldier);
 
                 // Hareket sonrasý seçimi ve ESKÝ hareket alanýný temizle.
                 selectedSoldier->toggleSelection();
@@ -166,7 +162,6 @@ void GameManager::handleClick(int mouseX, int mouseY)
 
         }
     }
-
 }
 
 void GameManager::draw(sf::RenderWindow& window)
@@ -257,6 +252,110 @@ void GameManager::endTurn()
 
     // (Opsiyonel) Konsola kimin sýrasý geldiðini yazdýr.
     std::cout << "--- New Turn: " << newPlayer->name << " ---\n";
+}
+
+Soldier* GameManager::getSoldierAt(sf::Vector2i position) const
+{
+    // Harita sýnýrlarý içinde mi diye kontrol et.
+    if (position.x < 0 || position.x >= mapWidth || position.y < 0 || position.y >= mapHeight)
+    {
+        return nullptr;
+    }
+
+    // Tüm askerleri tara.
+    for (const auto& owner : owners) // 'const' fonksiyonda olduðumuz için const referans kullanmak iyidir.
+    {
+        for (auto& soldier : owner->soldiers) // Burasý const olamaz çünkü Soldier* döndürüyoruz.
+        {
+            if (soldier.gridPosition == position)
+            {
+                return &soldier; // Askeri bulduk, adresini döndür.
+            }
+        }
+    }
+
+    return nullptr;
+}
+
+void GameManager::checkForCombat(Soldier* movedSoldier)
+{
+    if (movedSoldier == nullptr) return;
+
+    sf::Vector2i pos = movedSoldier->gridPosition;
+
+    // Hareket edilen yerin 4 komþusunu kontrol et.
+    const sf::Vector2i neighbors[] = {
+        {pos.x, pos.y - 1}, // Üst
+        {pos.x, pos.y + 1}, // Alt
+        {pos.x - 1, pos.y}, // Sol
+        {pos.x + 1, pos.y}  // Sað
+    };
+
+    for (const auto& neighborPos : neighbors)
+    {
+        Soldier* neighborSoldier = getSoldierAt(neighborPos);
+
+        // Eðer komþuda bir asker varsa VE bu asker bir düþmansa...
+        if (neighborSoldier != nullptr && neighborSoldier->owner != movedSoldier->owner)
+        {
+            std::cout << "COMBAT! " << movedSoldier->owner->name << " vs " << neighborSoldier->owner->name << "\n";
+            resolveCombat(*movedSoldier, *neighborSoldier);
+            // Þimdilik ilk bulduðu düþmanla savaþýr. Daha sonra çoklu savaþ düþünülebilir.
+            return;
+        }
+    }
+}
+
+void GameManager::resolveCombat(Soldier& attacker, Soldier& defender)
+{
+    Soldier::Type attType = attacker.type;
+    Soldier::Type defType = defender.type;
+
+    Soldier* winner = nullptr;
+    Soldier* loser = nullptr;
+
+    // Savaþ Kuralý: Triangle > Circle > Square > Triangle
+    if ((attType == Soldier::Type::Triangle && defType == Soldier::Type::Circle) ||
+        (attType == Soldier::Type::Circle && defType == Soldier::Type::Square) ||
+        (attType == Soldier::Type::Square && defType == Soldier::Type::Triangle))
+    {
+        winner = &attacker;
+        loser = &defender;
+    }
+    else // Beraberlik durumu veya kural dýþý bir durum
+    {
+
+        // Þimdilik beraberlikte hiçbir þey olmasýn.
+        std::cout << "Combat is a draw. " << soldierTypeToString(attType) << " " << soldierTypeToString(defType) << " No change.\n";
+        return;
+    }
+
+    std::cout << winner->owner->name << " wins the battle!\n";
+
+    Owner* oldOwner = loser->owner;
+    Owner* newOwner = winner->owner;
+
+    // 1. Kaybeden askerin sahibini ve rengini deðiþtir.
+    //loser->setOwner(newOwner);
+
+    // 1. Taþýnacak askeri eski sahibinin listesinde bul.
+    auto& oldSoldierList = oldOwner->soldiers;
+    auto it = std::find_if(oldSoldierList.begin(), oldSoldierList.end(),
+        [loser](const Soldier& s) { return &s == loser; });
+
+    if (it != oldSoldierList.end())
+    {
+        // 2. Askeri yeni sahibin listesine taþý. Bu, bir kopya oluþturur.
+        auto& newSoldierList = newOwner->soldiers;
+        newSoldierList.push_back(*it);
+
+        // 3. Eski listeden sil.
+        oldSoldierList.erase(it);
+
+        // 4. ÖNEMLÝ: Artýk YENÝ LÝSTEDEKÝ kopyanýn sahibini güncelle.
+        // newSoldierList.back() listenin son elemanýný verir.
+        newSoldierList.back().setOwner(newOwner);
+    }
 }
 
 void GameManager::startGame()

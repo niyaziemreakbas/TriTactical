@@ -43,6 +43,16 @@ void Soldier::resetMovementPoints()
     currentMovementPoints = movementPoints; // Deðeri baþlangýç deðerine döndür.
 }
 
+void Soldier::setOwner(Owner* newOwner)
+{
+    if (owner == newOwner)
+    {
+        return;
+    }
+    owner = newOwner;
+    shape.setFillColor(newOwner->color);
+}
+
 void Soldier::toggleSelection()
 {
 	std::cout << "Toggling selection for soldier at (" << gridPosition.x << ", " << gridPosition.y << ")\n";
