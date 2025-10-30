@@ -1,6 +1,4 @@
-Of course. Here is a detailed and well-structured README file in English, suitable for GitHub, based on the Game Design Document you provided.
-
-Shape Conquest: A 2D Turn-Based Strategy Game
+A 2D Turn-Based Strategy Game
 📜 Overview
 Shape Conquest is a 2D turn-based strategy game that blends classic board game mechanics with the simple, yet profound, logic of "Rock, Paper, Scissors." Players command an army of geometric shapes—Triangles, Circles, and Squares—on a grid-based map. The objective is not to destroy the enemy, but to convert them to your side, leading to dynamic shifts in power and a strategic battle for board control.
 
