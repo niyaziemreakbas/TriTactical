@@ -6,5 +6,35 @@ D:\CppProjects\TriTactical\TriTactical\include\SFML\System\Exception.hpp(41,47):
       D:\CppProjects\TriTactical\TriTactical\include\SFML\System\Exception.hpp(41,23):
       'sf::Exception' bildirimine bakın
   
-Game.obj : error LNK2001: çözümlenmemiş dış sembol "public: __cdecl GameManager::GameManager(void)" (??0GameManager@@QEAA@XZ)
-D:\CppProjects\TriTactical\TriTactical\x64\Release\TriTactical.exe : fatal error LNK1120: 1 çözümlenmemiş dışlar
+  GameManager.cpp
+D:\CppProjects\TriTactical\TriTactical\include\SFML\System\Exception.hpp(41,47): warning C4275: dll olmayan class 'std::runtime_error' arabirimi dll arabirimi class 'sf::Exception' için taban olarak kullanıldı
+  ('GameManager.cpp' kaynak dosyası derleniyor)
+      C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.43.34808\include\stdexcept(100,19):
+      'std::runtime_error' bildirimine bakın
+      D:\CppProjects\TriTactical\TriTactical\include\SFML\System\Exception.hpp(41,23):
+      'sf::Exception' bildirimine bakın
+  
+  Map.cpp
+D:\CppProjects\TriTactical\TriTactical\include\SFML\System\Exception.hpp(41,47): warning C4275: dll olmayan class 'std::runtime_error' arabirimi dll arabirimi class 'sf::Exception' için taban olarak kullanıldı
+  ('Map.cpp' kaynak dosyası derleniyor)
+      C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.43.34808\include\stdexcept(100,19):
+      'std::runtime_error' bildirimine bakın
+      D:\CppProjects\TriTactical\TriTactical\include\SFML\System\Exception.hpp(41,23):
+      'sf::Exception' bildirimine bakın
+  
+  TriTactical.cpp
+D:\CppProjects\TriTactical\TriTactical\include\SFML\System\Exception.hpp(41,47): warning C4275: dll olmayan class 'std::runtime_error' arabirimi dll arabirimi class 'sf::Exception' için taban olarak kullanıldı
+  ('TriTactical.cpp' kaynak dosyası derleniyor)
+      C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.43.34808\include\stdexcept(100,19):
+      'std::runtime_error' bildirimine bakın
+      D:\CppProjects\TriTactical\TriTactical\include\SFML\System\Exception.hpp(41,23):
+      'sf::Exception' bildirimine bakın
+  
+  Kod üretiliyor
+  273 of 573 functions (47.6%) were compiled, the rest were copied from previous compilation.
+    9 functions were new in current compilation
+    43 functions had inline decision re-evaluated but remain unchanged
+  Kodun üretilmesi tamamlandı
+  TriTactical.vcxproj -> D:\CppProjects\TriTactical\TriTactical\x64\Release\TriTactical.exe
+  'pwsh.exe' is not recognized as an internal or external command,
+  operable program or batch file.

@@ -5,6 +5,8 @@
 Soldier::Soldier(Owner* p_owner, Type p_type, sf::Vector2i p_gridPosition)
     : owner(p_owner), type(p_type), gridPosition(p_gridPosition)
 {
+    resetMovementPoints();
+
     // Configure the shape based on the soldier type.
     shape.setRadius(20.f); 
     shape.setOrigin(sf::Vector2f(shape.getRadius(), shape.getRadius())); 

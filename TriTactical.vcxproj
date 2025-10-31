@@ -146,6 +146,7 @@
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="GameManager.cpp" />
     <ClCompile Include="GridCell.cpp" />
+    <ClCompile Include="Map.cpp" />
     <ClCompile Include="Owner.cpp" />
     <ClCompile Include="Soldier.cpp" />
     <ClCompile Include="TriTactical.cpp" />
@@ -155,6 +156,7 @@
     <ClInclude Include="Game.h" />
     <ClInclude Include="GameManager.h" />
     <ClInclude Include="GridCell.h" />
+    <ClInclude Include="Map.h" />
     <ClInclude Include="Owner.h" />
     <ClInclude Include="Soldier.h" />
     <ClInclude Include="UIManager.h" />
