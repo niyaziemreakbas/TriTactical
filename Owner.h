@@ -8,7 +8,7 @@ class Owner
 public:
     std::string name;
     sf::Color color;
-    int gold = 90; // Initial gold value is 90[cite: 50].
+    int gold = 90;
 
     std::vector<Soldier> soldiers;
 
@@ -21,11 +21,4 @@ class PlayerOwner : public Owner
 {
 public:
     PlayerOwner(std::string name, sf::Color color);
-};
-
-// Subclass for the AI.
-class AIOwner : public Owner
-{
-public:
-    AIOwner(std::string name, sf::Color color);
 };

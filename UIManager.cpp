@@ -14,8 +14,6 @@ turnIndicatorText(font, "", 28)
 {
     LoadFont(font, "Assets/RockwellNova.ttf");
 
-    std::cout << "Font Type :: " << font.getInfo().family;
-
     ownerText.setFont(font);
     typeText.setFont(font);
     statsText.setFont(font);
@@ -72,7 +70,21 @@ void UIManager::LoadFont(sf::Font& font, std::string str)
         std::cerr << "ERROR::COULD NOT LOAD FILE::" << str << "!!!" << std::endl;
     }
     else {
-        std::cout << "Thats Okay ::" << font.getInfo().family;
+        std::cout << "Font Loaded : " << font.getInfo().family << std::endl;
+    }
+}
+
+void UIManager::setEndTurnButtonActive(bool isActive)
+{
+    if (isActive)
+    {
+        endTurnButton.setFillColor(sf::Color(100, 100, 250)); // Normal mavi renk
+        endTurnText.setString("End Turn");
+    }
+    else
+    {
+        endTurnButton.setFillColor(sf::Color(80, 80, 80)); // Pasif gri renk
+        endTurnText.setString("AI is Thinking...");
     }
 }
 
@@ -118,3 +130,4 @@ void UIManager::draw(sf::RenderWindow& window)
     window.draw(endTurnText);
     window.draw(turnIndicatorText);
 }
+

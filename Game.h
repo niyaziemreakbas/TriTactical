@@ -10,11 +10,11 @@ public:
 
 private:
     void processEvents();
-    void update();
+    void update(float dt);
     void render();
 
     sf::RenderWindow window;
     GameManager gameManager;
-    //UIManager uiManager;
 
+    sf::Clock clock;
 };

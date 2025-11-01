@@ -4,6 +4,7 @@
 #include "Soldier.h"
 #include <iostream>
 #include <string>
+#include "AIOwner.h"
 
 GameManager::GameManager(unsigned int windowWidth, unsigned int windowHeight)
     : m_map(windowWidth, windowHeight),
@@ -14,19 +15,87 @@ GameManager::GameManager(unsigned int windowWidth, unsigned int windowHeight)
 
 void GameManager::createInitialUnits()
 {
+    // Sahipleri (Player ve AI) oluþtur
     owners.push_back(std::make_unique<PlayerOwner>("Player", sf::Color::Blue));
     owners.push_back(std::make_unique<AIOwner>("AI 1", sf::Color::Red));
 
     sf::Vector2i mapDims = m_map.getDimensions();
 
-    owners[0]->soldiers.emplace_back(owners[0].get(), Soldier::Type::Square, sf::Vector2i(1, 1));
-    owners[1]->soldiers.emplace_back(owners[1].get(), Soldier::Type::Triangle, sf::Vector2i(mapDims.x - 2, mapDims.y - 2));
+    // --- Oyuncu (Mavi) için 3 farklý asker oluþtur ---
+    owners[0]->soldiers.emplace_back(owners[0].get(), Soldier::Type::Triangle, sf::Vector2i(1, 1));
+    owners[0]->soldiers.emplace_back(owners[0].get(), Soldier::Type::Circle, sf::Vector2i(1, 2));
+    owners[0]->soldiers.emplace_back(owners[0].get(), Soldier::Type::Square, sf::Vector2i(2, 1));
 
+    // --- Yapay Zeka (Kýrmýzý) için 3 farklý asker oluþtur ---
+    owners[1]->soldiers.emplace_back(owners[1].get(), Soldier::Type::Square, sf::Vector2i(mapDims.x - 2, mapDims.y - 2));
+    owners[1]->soldiers.emplace_back(owners[1].get(), Soldier::Type::Circle, sf::Vector2i(mapDims.x - 2, mapDims.y - 3));
+    owners[1]->soldiers.emplace_back(owners[1].get(), Soldier::Type::Triangle, sf::Vector2i(mapDims.x - 3, mapDims.y - 2));
+
+    // UI'ý baþlangýç durumu için ayarla
+    uiManager.setEndTurnButtonActive(true);
     uiManager.update(nullptr, owners[currentPlayerIndex]->name);
+}
+
+void GameManager::update(float dt)
+{
+    // Önce, oyundaki TÜM askerlerin animasyonunu her zaman ilerlet.
+    for (auto& owner : owners) {
+        for (auto& soldier : owner->soldiers) {
+            soldier.update(dt);
+        }
+    }
+
+    // Þimdi, oyunun durumuna göre karar ver.
+    switch (currentGameState)
+    {
+    case GameState::PLAYER_INPUT:
+        // Bu durumda hiçbir þey yapma, oyuncunun týklamasýný bekle.
+        break;
+
+    case GameState::AI_THINKING:
+    {
+        // YZ'nin düþünme zamaný!
+        AIOwner* aiOwner = dynamic_cast<AIOwner*>(owners[currentPlayerIndex].get());
+        if (aiOwner) {
+            aiOwner->processTurn(*this); // YZ tüm kararlarýný anýnda verir.
+        }
+        // YZ düþündükten sonra, animasyonlarýn oynamasý için oyunu ANIMATING moduna al.
+        //currentGameState = GameState::ANIMATING;
+        break;
+    }
+
+    case GameState::ANIMATING:
+    {
+        // Animasyonlarýn bitip bitmediðini kontrol et.
+        bool isAnyAnimationRunning = false;
+        for (const auto& owner : owners) {
+            for (const auto& soldier : owner->soldiers) {
+                if (soldier.IsAnimating()) {
+                    isAnyAnimationRunning = true;
+                    break;
+                }
+            }
+            if (isAnyAnimationRunning) break;
+        }
+
+        // Eðer tüm animasyonlar bittiyse...
+        if (!isAnyAnimationRunning) {
+            std::cout << "All animations finished.\n";
+            // Turu bitirerek sýrayý bir sonraki oyuncuya devret.
+            //endTurn();
+        }
+        break;
+    }
+    }
 }
 
 void GameManager::handleClick(int mouseX, int mouseY)
 {
+    if (currentGameState == GameState::ANIMATING)
+    {
+        return;
+    }
+
     if (uiManager.isEndTurnButtonClicked({ mouseX, mouseY }))
     {
         endTurn();
@@ -55,28 +124,16 @@ void GameManager::handleClick(int mouseX, int mouseY)
 
             if (canMove || canAttackMove)
             {
-                bool didAttackerSurvive = false; // Önce tanýmla
+                Soldier* soldierToMove = selectedSoldier;
 
-                // Hareketi yap
-                int distance = abs(clickedCell.x - selectedSoldier->gridPosition.x) + abs(clickedCell.y - selectedSoldier->gridPosition.y);
-                
-				selectedSoldier->gridPosition = clickedCell;
+                // 1. Merkezi hareket komutunu çaðýr.
+                executeMove(soldierToMove, clickedCell);
 
-                selectedSoldier->setCurrentPoints(-distance);
-
-                didAttackerSurvive = checkForCombat(selectedSoldier);
-
-                selectedSoldier->toggleSelection();
-
-                if (!didAttackerSurvive)
-                {
-                    selectedSoldier = nullptr;
-                    calculateMoveableCells(nullptr);
-                }
-                else
-                {
-                    calculateMoveableCells(selectedSoldier);
-                }
+                // 2. Hareketi baþlattýktan sonra, oyuncuya özel iþlemleri yap.
+                // (Seçimi kaldýrmak, renkleri temizlemek vb.)
+                soldierToMove->toggleSelection();
+                selectedSoldier = nullptr;
+                calculateMoveableCells(nullptr);
             }
             else
             {
@@ -134,10 +191,11 @@ void GameManager::draw(sf::RenderWindow& window)
     }
 
     // Askerleri çiz (offset ve tileSize'ý haritadan al)
-    sf::Vector2f mapOffset = m_map.getMapOffset();
-    float tileSize = m_map.getTileSize();
+    const sf::Vector2f mapOffset = m_map.getMapOffset();
+    const float tileSize = m_map.getTileSize();
     for (auto& owner : owners) {
         for (auto& soldier : owner->soldiers) {
+            // DEÐÝÞÝKLÝK: Eski, parametreli haliyle çaðýr.
             soldier.draw(window, tileSize, mapOffset.x, mapOffset.y);
         }
     }
@@ -153,6 +211,46 @@ std::string soldierTypeToString(Soldier::Type type)
     case Soldier::Type::Circle:   return "Circle";
     case Soldier::Type::Triangle: return "Triangle";
     default:                      return "Unknown";
+    }
+}
+
+sf::Vector2i GameManager::getRandomMapCell() const
+{
+    const sf::Vector2i mapDims = m_map.getDimensions();
+
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<> distribX(0, mapDims.x - 1);
+    std::uniform_int_distribution<> distribY(0, mapDims.y - 1);
+
+    return { distribX(gen), distribY(gen) };
+}
+
+void GameManager::executeMove(Soldier* soldier, const sf::Vector2i& targetCell)
+{
+    if (soldier == nullptr) return;
+
+    // 1. Piksel pozisyonlarýný hesapla.
+    const sf::Vector2f mapOffset = m_map.getMapOffset();
+    const float tileSize = m_map.getTileSize();
+    sf::Vector2f startPixel = {
+        mapOffset.x + (soldier->gridPosition.x * tileSize) + (tileSize / 2),
+        mapOffset.y + (soldier->gridPosition.y * tileSize) + (tileSize / 2)
+    };
+    sf::Vector2f targetPixel = {
+        mapOffset.x + (targetCell.x * tileSize) + (tileSize / 2),
+        mapOffset.y + (targetCell.y * tileSize) + (tileSize / 2)
+    };
+
+    // 2. MANTIKSAL hareketi anýnda yap.
+    // (Bu kýsmý Soldier::moveTo'ya zaten taþýmýþtýk, onu kullanalým!)
+    if (soldier->moveTo(targetCell))
+    {
+        // 3. GÖRSEL animasyonu baþlat.
+        soldier->startMoveAnimation(startPixel, targetPixel);
+
+        // 4. Oyunu animasyon moduna kilitle.
+        //currentGameState = GameState::ANIMATING;
     }
 }
 
@@ -262,7 +360,7 @@ void GameManager::endTurn()
     // 1. Mevcut seçimleri temizle.
     if (selectedSoldier != nullptr)
     {
-        //selectedSoldier->toggleSelection();
+        selectedSoldier->toggleSelection();
         selectedSoldier = nullptr;
     }
     moveableCells.clear();
@@ -280,6 +378,20 @@ void GameManager::endTurn()
 
     // (Opsiyonel) Konsola kimin sýrasý geldiðini yazdýr.
     std::cout << "--- New Turn: " << newPlayer->name << " ---\n";
+
+    if (dynamic_cast<AIOwner*>(newPlayer) != nullptr)
+    {
+		SetPlayerTurn(false);
+        currentGameState = GameState::AI_THINKING;
+        uiManager.setEndTurnButtonActive(false); // Butonu pasif yap ve yazýyý deðiþtir.
+        processAITurn(); 
+    }
+    else // Eðer yeni oyuncu insansa
+    {
+        SetPlayerTurn(true);
+        currentGameState = GameState::PLAYER_INPUT;
+        uiManager.setEndTurnButtonActive(true); // Butonu tekrar aktif yap.
+    }
 }
 
 bool GameManager::checkForCombat(Soldier* movedSoldier)
@@ -355,4 +467,23 @@ bool GameManager::resolveCombat(Soldier& attacker, Soldier& defender)
     winner->setCurrentPoints(-winner->getCurrentPoints());
 
     return attackResult;
+}
+
+// Ve iþte her þeyi birleþtiren ana YZ fonksiyonu!
+void GameManager::processAITurn()
+{
+    std::cout << "--- AI is thinking... ---\n";
+    //std::this_thread::sleep_for(std::chrono::milliseconds(500));
+
+    // Sýrasý gelen YZ'yi bul.
+    AIOwner* aiOwner = dynamic_cast<AIOwner*>(owners[currentPlayerIndex].get());
+    if (aiOwner)
+    {
+        // YZ'ye dünyayý göster ve oynamasýný söyle.
+        aiOwner->processTurn(*this);
+    }
+
+    std::cout << "AI finished its turn.\n";
+    //std::this_thread::sleep_for(std::chrono::milliseconds(500));
+    endTurn();
 }

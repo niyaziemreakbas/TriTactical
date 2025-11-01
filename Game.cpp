@@ -11,10 +11,15 @@ Game::Game()
 
 void Game::run()
 {
+    clock.restart(); // Döngü baþlamadan saati sýfýrla.
     while (window.isOpen())
     {
         processEvents();
-        update();
+
+        // Saati yeniden baþlat ve geçen süreyi saniye olarak al.
+        float dt = clock.restart().asSeconds();
+        update(dt);
+
         render();
     }
 }
@@ -39,9 +44,9 @@ void Game::processEvents()
     }
 }
 
-void Game::update()
+void Game::update(float dt)
 {
-    // Þimdilik boþ
+    gameManager.update(dt);
 }
 
 void Game::render()

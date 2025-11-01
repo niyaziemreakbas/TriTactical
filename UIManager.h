@@ -17,6 +17,8 @@ public:
 
 	void LoadFont(sf::Font& font, std::string str);
 
+    void setEndTurnButtonActive(bool isActive);
+
 private:
     sf::Font font;
     sf::Text ownerText;
