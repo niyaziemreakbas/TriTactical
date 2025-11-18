@@ -48,53 +48,51 @@ void GameManager::update(float dt)
     // Þimdi, oyunun durumuna göre karar ver.
     switch (currentGameState)
     {
-    case GameState::PLAYER_INPUT:
-        // Bu durumda hiçbir þey yapma, oyuncunun týklamasýný bekle.
-        break;
+        case GameState::PLAYER_INPUT:
+            // Bu durumda hiçbir þey yapma, oyuncunun týklamasýný bekle.
+            break;
 
-    case GameState::AI_THINKING:
-    {
-        // YZ'nin düþünme zamaný!
-        AIOwner* aiOwner = dynamic_cast<AIOwner*>(owners[currentPlayerIndex].get());
-        if (aiOwner) {
-            aiOwner->processTurn(*this); // YZ tüm kararlarýný anýnda verir.
-        }
-        // YZ düþündükten sonra, animasyonlarýn oynamasý için oyunu ANIMATING moduna al.
-        //currentGameState = GameState::ANIMATING;
-        break;
-    }
-
-    case GameState::ANIMATING:
-    {
-        // Animasyonlarýn bitip bitmediðini kontrol et.
-        bool isAnyAnimationRunning = false;
-        for (const auto& owner : owners) {
-            for (const auto& soldier : owner->soldiers) {
-                if (soldier.IsAnimating()) {
-                    isAnyAnimationRunning = true;
-                    break;
-                }
+        case GameState::AI_THINKING:
+        {
+            // YZ'nin düþünme zamaný!
+            AIOwner* aiOwner = dynamic_cast<AIOwner*>(owners[currentPlayerIndex].get());
+            if (aiOwner) {
+                aiOwner->processTurn(*this); // YZ tüm kararlarýný anýnda verir.
             }
-            if (isAnyAnimationRunning) break;
+            break;
         }
 
-        // Eðer tüm animasyonlar bittiyse...
-        if (!isAnyAnimationRunning) {
-            std::cout << "All animations finished.\n";
-            // Turu bitirerek sýrayý bir sonraki oyuncuya devret.
-            //endTurn();
-        }
-        break;
-    }
+        //case GameState::ANIMATING:
+        //{
+        //    // Animasyonlarýn bitip bitmediðini kontrol et.
+        //    bool isAnyAnimationRunning = false;
+        //    for (const auto& owner : owners) {
+        //        for (const auto& soldier : owner->soldiers) {
+        //            if (soldier.IsAnimating()) {
+        //                isAnyAnimationRunning = true;
+        //                break;
+        //            }
+        //        }
+        //        if (isAnyAnimationRunning) break;
+        //    }
+
+        //    // Eðer tüm animasyonlar bittiyse...
+        //    if (!isAnyAnimationRunning) {
+        //        std::cout << "All animations finished.\n";
+        //        // Turu bitirerek sýrayý bir sonraki oyuncuya devret.
+        //        //endTurn();
+        //    }
+        //    break;
+        //}
     }
 }
 
 void GameManager::handleClick(int mouseX, int mouseY)
 {
-    if (currentGameState == GameState::ANIMATING)
-    {
-        return;
-    }
+    //if (currentGameState == GameState::ANIMATING)
+    //{
+    //    return;
+    //}
 
     if (uiManager.isEndTurnButtonClicked({ mouseX, mouseY }))
     {
@@ -248,9 +246,6 @@ void GameManager::executeMove(Soldier* soldier, const sf::Vector2i& targetCell)
     {
         // 3. GÖRSEL animasyonu baþlat.
         soldier->startMoveAnimation(startPixel, targetPixel);
-
-        // 4. Oyunu animasyon moduna kilitle.
-        //currentGameState = GameState::ANIMATING;
     }
 }
 

@@ -66,21 +66,16 @@ void Soldier::update(float dt)
             progress = 1.0f; // Ýlerlemenin 1.0'ý geçmediðinden emin ol.
             isAnimating = false; // Animasyonu bitir.
         }
-
-        // Lineer Ýnterpolasyon (Lerp): Baþlangýç ve bitiþ noktasý arasýnda 'progress' yüzdesi kadar ilerle.
-        // Bu, akýcý hareketin formülüdür.
         pixelPosition = startPixelPos + (targetPixelPos - startPixelPos) * progress;
     }
 }
 
 void Soldier::draw(sf::RenderWindow& window, float tileSize, float offsetX, float offsetY)
 {
-    // EÐER ANÝMASYON OYNATILIYORSA, 'm_pixelPosition' kullanýlýr.
     if (isAnimating)
     {
         shape.setPosition(pixelPosition);
     }
-    // EÐER ANÝMASYON YOKSA (normal durma hali), pozisyonu her zamanki gibi HESAPLA.
     else
     {
         float pixelX = offsetX + (gridPosition.x * tileSize) + (tileSize / 2);
