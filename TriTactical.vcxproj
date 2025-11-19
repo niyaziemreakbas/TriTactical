@@ -164,6 +164,7 @@
     <ClInclude Include="Owner.h" />
     <ClInclude Include="Soldier.h" />
     <ClInclude Include="UIManager.h" />
+    <ClInclude Include="GameConfig.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

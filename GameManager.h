@@ -6,13 +6,12 @@
 #include "UIManager.h"
 #include "CombatManager.h"
 #include "Map.h"
-
-enum class GameMode { PvP, PvAI, AIvAI };
+#include "GameConfig.h"
 
 class GameManager
 {
 public:
-    GameManager(unsigned int windowWidth, unsigned int windowHeight);
+    GameManager(unsigned int windowWidth, unsigned int windowHeight, UIManager& uiMgr);
     void draw(sf::RenderWindow& window);
     void handleClick(int mouseX, int mouseY);
 
@@ -30,9 +29,11 @@ public:
 
     const Map& getMap() const { return m_map; }
     sf::Vector2i getRandomMapCell() const;
+        
+    void startGame(GameMode mode);
 
 private:
-    void createInitialUnits();
+   // void createInitialUnits();
  
     void calculateMoveableCells(Soldier* soldier);
 
@@ -41,7 +42,8 @@ private:
     void processAITurn();
 
     Map m_map; 
-    UIManager uiManager;
+    UIManager& uiManager;
+
     std::vector<std::unique_ptr<Owner>> owners;
 
     Soldier* selectedSoldier = nullptr;

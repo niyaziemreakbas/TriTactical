@@ -6,34 +6,102 @@
 #include <string>
 #include "AIOwner.h"
 
-GameManager::GameManager(unsigned int windowWidth, unsigned int windowHeight)
+GameManager::GameManager(unsigned int windowWidth, unsigned int windowHeight, UIManager& uiMgr)
     : m_map(windowWidth, windowHeight),
-    uiManager()
+    uiManager(uiMgr)
 {
-    createInitialUnits();
+    //createInitialUnits();
 }
 
-void GameManager::createInitialUnits()
-{
-    // Sahipleri (Player ve AI) oluþtur
-    owners.push_back(std::make_unique<PlayerOwner>("Player", sf::Color::Blue));
-    owners.push_back(std::make_unique<AIOwner>("AI 1", sf::Color::Red));
+//void GameManager::createInitialUnits()
+//{
+//    // Sahipleri (Player ve AI) oluþtur
+//    owners.push_back(std::make_unique<PlayerOwner>("Player", sf::Color::Blue));
+//    owners.push_back(std::make_unique<AIOwner>("AI 1", sf::Color::Red));
+//
+//    sf::Vector2i mapDims = m_map.getDimensions();
+//
+//    // --- Oyuncu (Mavi) için 3 farklý asker oluþtur ---
+//    owners[0]->soldiers.emplace_back(owners[0].get(), Soldier::Type::Triangle, sf::Vector2i(1, 1));
+//    owners[0]->soldiers.emplace_back(owners[0].get(), Soldier::Type::Circle, sf::Vector2i(1, 2));
+//    owners[0]->soldiers.emplace_back(owners[0].get(), Soldier::Type::Square, sf::Vector2i(2, 1));
+//
+//    // --- Yapay Zeka (Kýrmýzý) için 3 farklý asker oluþtur ---
+//    owners[1]->soldiers.emplace_back(owners[1].get(), Soldier::Type::Square, sf::Vector2i(mapDims.x - 2, mapDims.y - 2));
+//    owners[1]->soldiers.emplace_back(owners[1].get(), Soldier::Type::Circle, sf::Vector2i(mapDims.x - 2, mapDims.y - 3));
+//    owners[1]->soldiers.emplace_back(owners[1].get(), Soldier::Type::Triangle, sf::Vector2i(mapDims.x - 3, mapDims.y - 2));
+//
+//    // UI'ý baþlangýç durumu için ayarla
+//    uiManager.setEndTurnButtonActive(true);
+//    uiManager.updateGameUI(nullptr, owners[currentPlayerIndex]->name);
+//}
 
+void GameManager::startGame(GameMode mode)
+{
+    std::cout << "Starting game in mode: " << static_cast<int>(mode) << "\n";
+
+    // 1. Önceki oyundan kalan her þeyi temizle
+    owners.clear();
+    selectedSoldier = nullptr;
+    moveableCells.clear();
+    attackableCells.clear();
+
+    // Harita üzerindeki renkleri sýfýrla
+    // (Eðer Map sýnýfýnda reset fonksiyonun yoksa þimdilik sadece grid'i temizlemiþ varsayýyoruz)
+
+    // 2. Seçilen moda göre Oyuncularý (Owners) Oluþtur
+    switch (mode)
+    {
+    case GameMode::PvP:
+        owners.push_back(std::make_unique<PlayerOwner>("Player 1", sf::Color::Blue));
+        owners.push_back(std::make_unique<PlayerOwner>("Player 2", sf::Color::Red));
+        break;
+
+    case GameMode::PvAI:
+        owners.push_back(std::make_unique<PlayerOwner>("Player", sf::Color::Blue));
+        owners.push_back(std::make_unique<AIOwner>("AI Bot", sf::Color::Red));
+        break;
+
+    case GameMode::AIvAI:
+        owners.push_back(std::make_unique<AIOwner>("AI Alpha", sf::Color::Blue));
+        owners.push_back(std::make_unique<AIOwner>("AI Beta", sf::Color::Red));
+        break;
+    }
+
+    // 3. Askerleri Yerleþtir
     sf::Vector2i mapDims = m_map.getDimensions();
 
-    // --- Oyuncu (Mavi) için 3 farklý asker oluþtur ---
+    // -- Mavi Takým (0. indeks) --
+    // Dikkat: owners[0] her zaman var, güvenle eriþebiliriz.
     owners[0]->soldiers.emplace_back(owners[0].get(), Soldier::Type::Triangle, sf::Vector2i(1, 1));
     owners[0]->soldiers.emplace_back(owners[0].get(), Soldier::Type::Circle, sf::Vector2i(1, 2));
     owners[0]->soldiers.emplace_back(owners[0].get(), Soldier::Type::Square, sf::Vector2i(2, 1));
 
-    // --- Yapay Zeka (Kýrmýzý) için 3 farklý asker oluþtur ---
+    // -- Kýrmýzý Takým (1. indeks) --
     owners[1]->soldiers.emplace_back(owners[1].get(), Soldier::Type::Square, sf::Vector2i(mapDims.x - 2, mapDims.y - 2));
     owners[1]->soldiers.emplace_back(owners[1].get(), Soldier::Type::Circle, sf::Vector2i(mapDims.x - 2, mapDims.y - 3));
     owners[1]->soldiers.emplace_back(owners[1].get(), Soldier::Type::Triangle, sf::Vector2i(mapDims.x - 3, mapDims.y - 2));
 
-    // UI'ý baþlangýç durumu için ayarla
-    uiManager.setEndTurnButtonActive(true);
-    uiManager.update(nullptr, owners[currentPlayerIndex]->name);
+    // 4. Tur Sistemini Baþlat
+    currentPlayerIndex = 0;
+
+    //// Tur baþý savaþ kontrolü (dönüþüm varsa hemen uygula)
+    //for (auto& soldier : owners[currentPlayerIndex]->soldiers) {
+    //    checkForCombat(&soldier);
+    //}
+
+    // Ýlk oyuncunun kim olduðuna göre durumu ayarla
+    if (dynamic_cast<AIOwner*>(owners[0].get())) {
+        currentGameState = GameState::AI_THINKING;
+        uiManager.setEndTurnButtonActive(false);
+        processAITurn(); // YZ ise hemen düþünsün
+    }
+    else {
+        currentGameState = GameState::PLAYER_INPUT;
+        uiManager.setEndTurnButtonActive(true);
+    }
+
+    uiManager.updateGameUI(nullptr, owners[currentPlayerIndex]->name);
 }
 
 void GameManager::update(float dt)
@@ -181,7 +249,7 @@ void GameManager::handleClick(int mouseX, int mouseY)
             calculateMoveableCells(selectedSoldier);
         }
     }
-    uiManager.update(selectedSoldier, owners[currentPlayerIndex]->name);
+    uiManager.updateGameUI(selectedSoldier, owners[currentPlayerIndex]->name);
 }
 
 void GameManager::draw(sf::RenderWindow& window)
@@ -215,7 +283,7 @@ void GameManager::draw(sf::RenderWindow& window)
         }
     }
 
-    uiManager.draw(window);
+    uiManager.drawGameUI(window);
 }
 
 sf::Vector2i GameManager::getRandomMapCell() const
@@ -372,7 +440,7 @@ void GameManager::endTurn()
 
         checkForCombat(&soldier);
     }
-    uiManager.update(selectedSoldier, owners[currentPlayerIndex]->name);
+    uiManager.updateGameUI(selectedSoldier, owners[currentPlayerIndex]->name);
 
     std::cout << "--- New Turn: " << newPlayer->name << " ---\n";
 
