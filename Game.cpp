@@ -45,14 +45,29 @@ void Game::processEvents()
 
                     if (action == MenuAction::SelectPvP) {
                         selectedMode = GameMode::PvP;
+
+                        // PvP rules
+                        numHumans = 2;
+                        numAI = 0;
+
                         currentState = AppState::GameSetup;
                     }
                     else if (action == MenuAction::SelectPvAI) {
                         selectedMode = GameMode::PvAI;
+
+						// PvAI rules
+                        numHumans = 1;
+                        numAI = 1;
+
                         currentState = AppState::GameSetup;
                     }
                     else if (action == MenuAction::SelectAIvAI) {
                         selectedMode = GameMode::AIvAI;
+
+						// AIvAI rules
+						numHumans = 0;
+						numAI = 2;
+
                         currentState = AppState::GameSetup;
                     }
                 }
@@ -61,16 +76,49 @@ void Game::processEvents()
                     MenuAction action = uiManager.handleSetupClick(mx, my);
 
                     if (action == MenuAction::StartGame) {
-                        gameManager.startGame(selectedMode);
+                        // SAYILARI GÖNDER
+                        gameManager.startGame(selectedMode, numHumans, numAI);
                         currentState = AppState::Gameplay;
                     }
                     else if (action == MenuAction::BackToMenu) {
                         currentState = AppState::MainMenu;
                     }
+                    // Increase
+                    else if (action == MenuAction::IncHuman && numHumans < 4) numHumans++;
+                    else if (action == MenuAction::IncAI && numAI < 20) numAI++;
+
+                    // Decrease
+                    else if (action == MenuAction::DecHuman)
+                    {
+                        // PvP ise 2'nin altýna inemesin
+                        if (selectedMode == GameMode::PvP && numHumans > 2) numHumans--;
+                        // PvAI ise 1'in altýna inemesin
+                        else if (selectedMode == GameMode::PvAI && numHumans > 1) numHumans--;
+                        // Diðer durumlarda (AIvAI) 0'a kadar inebilir (gerçi AIvAI'da insan butonunu gizlesen daha þýk olur ama þimdilik kalsýn)
+                        else if (selectedMode == GameMode::AIvAI && numHumans > 0) numHumans--;
+                    }
+                    else if (action == MenuAction::DecAI)
+                    {
+                        // AIvAI ise 2'nin altýna inemesin
+                        if (selectedMode == GameMode::AIvAI && numAI > 2) numAI--;
+                        // PvAI ise 1'in altýna inemesin
+                        else if (selectedMode == GameMode::PvAI && numAI > 1) numAI--;
+                        // PvP ise 0'a kadar inebilir
+                        else if (selectedMode == GameMode::PvP && numAI > 0) numAI--;
+                    }
                 }
                 else if (currentState == AppState::Gameplay)
                 {
                     gameManager.handleClick(mx, my);
+                }
+                else if (currentState == AppState::GameOver)
+                {
+                    MenuAction action = uiManager.handleGameOverClick(mx, my);
+
+                    if (action == MenuAction::ReturnToMain)
+                    {
+                        currentState = AppState::MainMenu;
+                    }
                 }
             }
         }
@@ -79,10 +127,11 @@ void Game::processEvents()
         if (const auto* key = event->getIf<sf::Event::KeyPressed>()) {
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Escape)) {
                 if (currentState == AppState::Gameplay) {
-                    currentState = AppState::MainMenu; // Oyundan çýkýp menüye dön
+                    currentState = AppState::MainMenu;
                 }
                 else if (currentState == AppState::GameSetup) {
-                    currentState = AppState::MainMenu; // Setup'tan menüye dön
+					//resetPlayerNums();
+                    currentState = AppState::MainMenu;
                 }
             }
         }
@@ -91,7 +140,16 @@ void Game::processEvents()
 
 void Game::update(float dt)
 {
-    gameManager.update(dt);
+    if (currentState == AppState::Gameplay)
+    {
+        gameManager.update(dt);
+
+        // Oyun bitti mi kontrol et?
+        if (gameManager.isGameOver())
+        {
+            currentState = AppState::GameOver;
+        }
+    }
 }
 
 void Game::render()
@@ -104,7 +162,7 @@ void Game::render()
     }
     else if (currentState == AppState::GameSetup)
     {
-        uiManager.drawSetupMenu(window, selectedMode);
+        uiManager.drawSetupMenu(window, selectedMode, numHumans, numAI);
     }
     else if (currentState == AppState::Gameplay)
     {
@@ -112,6 +170,19 @@ void Game::render()
 
         gameManager.draw(window);
     }
+    else if (currentState == AppState::GameOver)
+    {
+        window.clear(sf::Color(150, 50, 150));
+        gameManager.draw(window);
+
+        uiManager.drawGameOverScreen(window, gameManager.getWinnerName());
+    }
 
     window.display();
+}
+
+void Game::resetPlayerNums()
+{
+	numHumans = 0;
+	numAI = 0;
 }

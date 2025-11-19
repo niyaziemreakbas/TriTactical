@@ -3,7 +3,8 @@
 enum class AppState {
     MainMenu,
     GameSetup,
-    Gameplay
+    Gameplay,
+    GameOver
 };
 
 enum class GameMode {
@@ -19,5 +20,8 @@ enum class MenuAction {
     SelectPvAI,
     SelectAIvAI,
     StartGame,
-    BackToMenu
+    BackToMenu,
+    IncHuman, DecHuman,
+    IncAI, DecAI,
+    ReturnToMain
 };

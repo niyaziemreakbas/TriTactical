@@ -1,12 +1,4 @@
-﻿  AIOwner.cpp
-D:\CppProjects\TriTactical\TriTactical\include\SFML\System\Exception.hpp(41,47): warning C4275: dll olmayan class 'std::runtime_error' arabirimi dll arabirimi class 'sf::Exception' için taban olarak kullanıldı
-  ('AIOwner.cpp' kaynak dosyası derleniyor)
-      C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.43.34808\include\stdexcept(100,19):
-      'std::runtime_error' bildirimine bakın
-      D:\CppProjects\TriTactical\TriTactical\include\SFML\System\Exception.hpp(41,23):
-      'sf::Exception' bildirimine bakın
-  
-  Game.cpp
+﻿  Game.cpp
 D:\CppProjects\TriTactical\TriTactical\include\SFML\System\Exception.hpp(41,47): warning C4275: dll olmayan class 'std::runtime_error' arabirimi dll arabirimi class 'sf::Exception' için taban olarak kullanıldı
   ('Game.cpp' kaynak dosyası derleniyor)
       C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.43.34808\include\stdexcept(100,19):
@@ -14,31 +6,9 @@ D:\CppProjects\TriTactical\TriTactical\include\SFML\System\Exception.hpp(41,47):
       D:\CppProjects\TriTactical\TriTactical\include\SFML\System\Exception.hpp(41,23):
       'sf::Exception' bildirimine bakın
   
-  GameManager.cpp
-D:\CppProjects\TriTactical\TriTactical\include\SFML\System\Exception.hpp(41,47): warning C4275: dll olmayan class 'std::runtime_error' arabirimi dll arabirimi class 'sf::Exception' için taban olarak kullanıldı
-  ('GameManager.cpp' kaynak dosyası derleniyor)
-      C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.43.34808\include\stdexcept(100,19):
-      'std::runtime_error' bildirimine bakın
-      D:\CppProjects\TriTactical\TriTactical\include\SFML\System\Exception.hpp(41,23):
-      'sf::Exception' bildirimine bakın
+D:\CppProjects\TriTactical\TriTactical\TriTactical\Map.h(21,48): warning C4244: 'return': 'int' - 'float' dönüşümü; veri kaybı olabilir
+  ('Game.cpp' kaynak dosyası derleniyor)
   
-  TriTactical.cpp
-D:\CppProjects\TriTactical\TriTactical\include\SFML\System\Exception.hpp(41,47): warning C4275: dll olmayan class 'std::runtime_error' arabirimi dll arabirimi class 'sf::Exception' için taban olarak kullanıldı
-  ('TriTactical.cpp' kaynak dosyası derleniyor)
-      C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.43.34808\include\stdexcept(100,19):
-      'std::runtime_error' bildirimine bakın
-      D:\CppProjects\TriTactical\TriTactical\include\SFML\System\Exception.hpp(41,23):
-      'sf::Exception' bildirimine bakın
-  
-  UIManager.cpp
-D:\CppProjects\TriTactical\TriTactical\include\SFML\System\Exception.hpp(41,47): warning C4275: dll olmayan class 'std::runtime_error' arabirimi dll arabirimi class 'sf::Exception' için taban olarak kullanıldı
-  ('UIManager.cpp' kaynak dosyası derleniyor)
-      C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.43.34808\include\stdexcept(100,19):
-      'std::runtime_error' bildirimine bakın
-      D:\CppProjects\TriTactical\TriTactical\include\SFML\System\Exception.hpp(41,23):
-      'sf::Exception' bildirimine bakın
-  
-  Kod Üretiliyor...
   TriTactical.vcxproj -> D:\CppProjects\TriTactical\TriTactical\x64\Debug\TriTactical.exe
   'pwsh.exe' is not recognized as an internal or external command,
   operable program or batch file.

@@ -19,8 +19,6 @@ public:
     void executeMove(Soldier* soldier, const sf::Vector2i& targetCell);
 
     void endTurn();
-	bool IsPlayerTurn() const { return isPlayerTurn; }
-	bool SetPlayerTurn(bool turn) { return isPlayerTurn = turn; }
 
     bool checkForCombat(Soldier* movedSoldier);
     Soldier* getSoldierAt(sf::Vector2i position) const;
@@ -29,12 +27,17 @@ public:
 
     const Map& getMap() const { return m_map; }
     sf::Vector2i getRandomMapCell() const;
-        
-    void startGame(GameMode mode);
+    sf::Vector2i findRandomEmptyCell();
+    void startGame(GameMode mode, int numHumans, int numBots);
 
-private:
-   // void createInitialUnits();
- 
+    bool isGameOver() const { return m_isGameOver; }
+    std::string getWinnerName() const { return m_winnerName; }
+
+private: 
+    bool m_isGameOver = false;
+    std::string m_winnerName = "";
+    void checkWinCondition();
+
     void calculateMoveableCells(Soldier* soldier);
 
     CombatManager combatManager;
@@ -51,9 +54,6 @@ private:
 
     enum class GameState { PLAYER_INPUT, ANIMATING, AI_THINKING };
     GameState currentGameState = GameState::PLAYER_INPUT;
-
-	// Can be use in Game State but its okay for now
-    bool isPlayerTurn;
 
     std::vector<sf::Vector2i> moveableCells;
     std::vector<sf::Vector2i> attackableCells;

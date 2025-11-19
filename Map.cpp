@@ -43,6 +43,46 @@ void Map::draw(sf::RenderWindow& window)
     }
 }
 
+void Map::regenerate(unsigned int width, unsigned int height, unsigned int windowWidth, unsigned int windowHeight)
+{
+    // Eski haritayý temizle
+    grid.clear();
+
+    mapWidth = width;
+    mapHeight = height;
+
+    // Haritayý ekranýn ortasýna hizalamak için hesaplamalar
+    totalMapWidth = mapWidth * tileSize;
+    totalMapHeight = mapHeight * tileSize;
+
+    mapOffsetX = (windowWidth - totalMapWidth) / 2.0f;
+    mapOffsetY = (windowHeight - totalMapHeight) / 2.0f;
+
+    // Grid'i yeniden boyutlandýr
+    grid.resize(mapWidth);
+    for (int i = 0; i < mapWidth; ++i) {
+        grid[i].resize(mapHeight);
+    }
+
+    // Hücreleri oluþtur
+    for (int x = 0; x < mapWidth; ++x) {
+        for (int y = 0; y < mapHeight; ++y) {
+            grid[x][y].shape.setSize(sf::Vector2f(tileSize, tileSize));
+            // Pozisyonlarý yeni offset'e göre ayarla
+            grid[x][y].shape.setPosition(sf::Vector2f(mapOffsetX + (x * tileSize), mapOffsetY + (y * tileSize)));
+            grid[x][y].shape.setFillColor(sf::Color::White);
+            grid[x][y].shape.setOutlineThickness(3.0f);
+            grid[x][y].shape.setOutlineColor(sf::Color(200, 200, 200));
+        }
+    }
+}
+
+// Checks just the boundaries of the map not the cell content
+bool Map::isEmpty(sf::Vector2i pos) const
+{
+    return (pos.x >= 0 && pos.x < mapWidth && pos.y >= 0 && pos.y < mapHeight);
+}
+
 void Map::colorCell(sf::Vector2i position, sf::Color color)
 {
     if (position.x >= 0 && position.x < mapWidth && position.y >= 0 && position.y < mapHeight) {

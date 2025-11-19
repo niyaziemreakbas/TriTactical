@@ -6,10 +6,10 @@
 
 UIManager::UIManager() : 
 font("Assets/arial.ttf"),
-ownerText(font, "süleyman", 24),     // ownerText'i boþ string, Sýnýfýn 'font' üyesi ve 24 punto ile baþlat
-typeText(font, "", 20),      // typeText'i baþlat
-statsText(font, "", 20),     // statsText'i baþlat
-endTurnText(font, "End Turn", 24), // endTurnText'i baþlat
+ownerText(font, "süleyman", 24),  
+typeText(font, "", 20),    
+statsText(font, "", 20),
+endTurnText(font, "End Turn", 24), 
 turnIndicatorText(font, "", 28),
 
 //Setup Menu Texts
@@ -17,12 +17,21 @@ setupTitleText(font, "GAME SETUP", 48),
 setupInfoText(font, "", 24),
 txtStartGame(font, "START BATTLE", 24),
 txtBack(font, "Back", 24),
+labelHuman(font, "Humans:", 24),
+txtHumanCount(font, "1", 30),
+labelAI(font, "AI Bots:", 24),
+txtAICount(font, "1", 30),
 
 //Main Menu Texts
 titleText(font, "TRI-TACTICAL", 60),
 txtPvP(font, "Player vs Player", 24),
 txtPvAI(font, "Player vs AI", 24),
-txtAIvAI(font, "AI vs AI", 24)
+txtAIvAI(font, "AI vs AI", 24),
+
+//End Game Texts
+txtGameOverTitle(font, "GAME OVER", 60),
+txtWinnerName(font, "", 40),
+txtReturnMain(font, "Main Menu", 24)
 {
     LoadFont(font, "Assets/RockwellNova.ttf");
     
@@ -66,7 +75,6 @@ void UIManager::initMenuUI()
     titleText.setFillColor(sf::Color::Yellow);
 
     sf::FloatRect titleBounds = titleText.getLocalBounds();
-    // SFML 3.0 Origin Ayarý:
     titleText.setOrigin(titleBounds.position + titleBounds.size / 2.f);
     titleText.setPosition(sf::Vector2f(1366.f / 2.f, 100.f));
 
@@ -82,6 +90,41 @@ void UIManager::initMenuUI()
     sf::FloatRect setupBounds = setupTitleText.getLocalBounds();
     setupTitleText.setOrigin(setupBounds.position + setupBounds.size / 2.f);
     setupTitleText.setPosition(sf::Vector2f(1366.f / 2.f, 50.f));
+
+    // Human Numbers
+    labelHuman.setFont(font);
+    labelHuman.setString("Humans:");
+    labelHuman.setPosition(sf::Vector2f(400, 250));
+
+    //createBtn(btnDecHuman, txtBack /*geçici*/, "-", 250, sf::Color::Red); // createBtn fonksiyonunu özelleþtirmen gerekebilir, manuel yapalým:
+    btnDecHuman.setSize(sf::Vector2f(50, 50));
+    btnDecHuman.setPosition(sf::Vector2f(600, 250));
+    btnDecHuman.setFillColor(sf::Color(100, 100, 100));
+
+    txtHumanCount.setFont(font);
+    txtHumanCount.setCharacterSize(30);
+    txtHumanCount.setPosition(sf::Vector2f(670, 255));
+
+    btnIncHuman.setSize(sf::Vector2f(50, 50));
+    btnIncHuman.setPosition(sf::Vector2f(720, 250));
+    btnIncHuman.setFillColor(sf::Color(100, 100, 100));
+
+    // AI Numbers
+    labelAI.setFont(font);
+    labelAI.setString("AI Bots:");
+    labelAI.setPosition(sf::Vector2f(400, 350));
+
+    btnDecAI.setSize(sf::Vector2f(50, 50));
+    btnDecAI.setPosition(sf::Vector2f(600, 350));
+    btnDecAI.setFillColor(sf::Color(100, 100, 100));
+
+    txtAICount.setFont(font);
+    txtAICount.setCharacterSize(30);
+    txtAICount.setPosition(sf::Vector2f(670, 355));
+
+    btnIncAI.setSize(sf::Vector2f(50, 50));
+    btnIncAI.setPosition(sf::Vector2f(720, 350));
+    btnIncAI.setFillColor(sf::Color(100, 100, 100));
 
     setupInfoText.setFont(font);
     setupInfoText.setCharacterSize(24);
@@ -120,7 +163,7 @@ void UIManager::initGameUI()
     endTurnText.setString("End Turn");
     endTurnText.setCharacterSize(24);
     endTurnText.setPosition(sf::Vector2f(endTurnButton.getPosition().x + 10,
-        endTurnButton.getPosition().y + 10));
+    endTurnButton.getPosition().y + 10));
 
     // --- Turn Indicator ---
     turnIndicatorText.setCharacterSize(28);
@@ -133,8 +176,52 @@ void UIManager::initGameUI()
     infoPanel.setOutlineColor(sf::Color::White);
     infoPanel.setOutlineThickness(1.f);
     infoPanel.setPosition(sf::Vector2f(20.f, 1366.f - 140.f));
-    // NOT: Y koordinatý için "1366 - 140" yazmýþsýn, 
-    // normalde ekran yüksekliði (768) olmasý gerekebilir ama senin düzenine göre býraktým.
+
+    // --- GAME OVER PANEL ---
+    gameOverPanel.setSize(sf::Vector2f(1366.f, 768.f));
+    gameOverPanel.setFillColor(sf::Color(0, 0, 0, 200)); 
+
+    txtGameOverTitle.setFont(font);
+    txtGameOverTitle.setString("GAME OVER");
+    txtGameOverTitle.setCharacterSize(80);
+    txtGameOverTitle.setFillColor(sf::Color::Red);
+    sf::FloatRect titleBounds = txtGameOverTitle.getLocalBounds();
+    txtGameOverTitle.setOrigin(titleBounds.position + titleBounds.size / 2.f);
+    txtGameOverTitle.setPosition(sf::Vector2f(1366.f / 2.f, 250.f));
+
+    txtWinnerName.setFont(font);
+    txtWinnerName.setCharacterSize(40);
+    txtWinnerName.setFillColor(sf::Color::Yellow);
+    // Pozisyonu draw fonksiyonunda winner ismine göre ortalayacaðýz, þimdilik boþ kalsýn.
+
+    // Ana Menüye Dön Butonu (Panelin içinde)
+    createBtn(btnReturnMain, txtReturnMain, "Main Menu", 500.f, sf::Color(50, 50, 50));
+}
+
+void UIManager::drawGameOverScreen(sf::RenderWindow& window, std::string winnerName)
+{
+    // Önce paneli çiz
+    window.draw(gameOverPanel);
+    window.draw(txtGameOverTitle);
+
+    // Kazanan yazýsýný güncelle ve ortala
+    txtWinnerName.setString("Winner: " + winnerName);
+    sf::FloatRect bounds = txtWinnerName.getLocalBounds();
+    txtWinnerName.setOrigin(bounds.position + bounds.size / 2.f);
+    txtWinnerName.setPosition(sf::Vector2f(1366.f / 2.f, 350.f));
+
+    window.draw(txtWinnerName);
+
+    // Butonu çiz
+    window.draw(btnReturnMain);
+    window.draw(txtReturnMain);
+}
+
+MenuAction UIManager::handleGameOverClick(int x, int y)
+{
+    sf::Vector2f mPos(static_cast<float>(x), static_cast<float>(y));
+    if (btnReturnMain.getGlobalBounds().contains(mPos)) return MenuAction::ReturnToMain;
+    return MenuAction::None;
 }
 
 void UIManager::drawMainMenu(sf::RenderWindow& window)
@@ -145,20 +232,32 @@ void UIManager::drawMainMenu(sf::RenderWindow& window)
     window.draw(btnAIvAI); window.draw(txtAIvAI);
 }
 
-void UIManager::drawSetupMenu(sf::RenderWindow& window, GameMode selectedMode)
+void UIManager::drawSetupMenu(sf::RenderWindow& window, GameMode selectedMode, int humanCount, int aiCount)
 {
-    // Mod bilgisine göre yazýyý güncelle (bunu her frame yapmak yerine deðiþimde yapmak daha iyi ama þimdilik sorun deðil)
-    std::string modeStr = "Unknown";
-    if (selectedMode == GameMode::PvP) modeStr = "Player vs Player";
-    else if (selectedMode == GameMode::PvAI) modeStr = "Player vs AI";
-    else if (selectedMode == GameMode::AIvAI) modeStr = "AI vs AI";
-
-    setupInfoText.setString("Selected Mode: " + modeStr + "\n\nSettings area...");
-
     window.draw(setupTitleText);
-    window.draw(setupInfoText);
     window.draw(btnStartGame); window.draw(txtStartGame);
     window.draw(btnBack); window.draw(txtBack);
+
+    // Stringleri güncelle
+    txtHumanCount.setString(std::to_string(humanCount));
+    txtAICount.setString(std::to_string(aiCount));
+
+    // Mod'a göre butonlarý çiz
+    bool showHuman = (selectedMode == GameMode::PvP || selectedMode == GameMode::PvAI);
+    bool showAI = (selectedMode == GameMode::AIvAI || selectedMode == GameMode::PvAI);
+
+    if (showHuman) {
+        window.draw(labelHuman);
+        window.draw(btnDecHuman);
+        window.draw(txtHumanCount);
+        window.draw(btnIncHuman);
+    }
+    if (showAI) {
+        window.draw(labelAI);
+        window.draw(btnDecAI);
+        window.draw(txtAICount);
+        window.draw(btnIncAI);
+    }
 }
 
 MenuAction UIManager::handleMenuClick(int x, int y)
@@ -174,10 +273,16 @@ MenuAction UIManager::handleMenuClick(int x, int y)
 
 MenuAction UIManager::handleSetupClick(int x, int y)
 {
-    sf::Vector2f mousePos(static_cast<float>(x), static_cast<float>(y));
+    sf::Vector2f mPos(static_cast<float>(x), static_cast<float>(y));
 
-    if (btnStartGame.getGlobalBounds().contains(mousePos)) return MenuAction::StartGame;
-    if (btnBack.getGlobalBounds().contains(mousePos)) return MenuAction::BackToMenu;
+    if (btnStartGame.getGlobalBounds().contains(mPos)) return MenuAction::StartGame;
+    if (btnBack.getGlobalBounds().contains(mPos)) return MenuAction::BackToMenu;
+
+    // +/- Buton kontrolleri
+    if (btnIncHuman.getGlobalBounds().contains(mPos)) return MenuAction::IncHuman;
+    if (btnDecHuman.getGlobalBounds().contains(mPos)) return MenuAction::DecHuman;
+    if (btnIncAI.getGlobalBounds().contains(mPos)) return MenuAction::IncAI;
+    if (btnDecAI.getGlobalBounds().contains(mPos)) return MenuAction::DecAI;
 
     return MenuAction::None;
 }
@@ -254,4 +359,3 @@ void UIManager::drawGameUI(sf::RenderWindow& window)
     window.draw(endTurnText);
     window.draw(turnIndicatorText);
 }
-

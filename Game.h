@@ -16,6 +16,11 @@ private:
 
     AppState currentState = AppState::MainMenu;
     GameMode selectedMode;
+    int numHumans = 0;
+    int numAI = 0;
+
+    // Helper: Mod deðiþince varsayýlan sayýlarý ayarla
+    void resetPlayerNums();
 
     sf::RenderWindow window;
 

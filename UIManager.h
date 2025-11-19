@@ -9,7 +9,7 @@ public:
     UIManager(); 
 
     void drawMainMenu(sf::RenderWindow& window);
-    void drawSetupMenu(sf::RenderWindow& window, GameMode selectedMode);
+    void drawSetupMenu(sf::RenderWindow& window, GameMode selectedMode, int humanCount, int aiCount);
 
     MenuAction handleMenuClick(int x, int y);
     MenuAction handleSetupClick(int x, int y);
@@ -24,6 +24,9 @@ public:
 
     void setEndTurnButtonActive(bool isActive);
 
+    void drawGameOverScreen(sf::RenderWindow& window, std::string winnerName);
+    MenuAction handleGameOverClick(int x, int y);
+
 private:
     sf::Font font;
 
@@ -37,6 +40,10 @@ private:
     sf::Text setupInfoText;
     sf::RectangleShape btnStartGame, btnBack;
     sf::Text txtStartGame, txtBack;
+    sf::RectangleShape btnIncHuman, btnDecHuman;
+    sf::RectangleShape btnIncAI, btnDecAI;
+    sf::Text txtHumanCount, txtAICount;
+    sf::Text labelHuman, labelAI;
 
     // In Game Texts
     sf::Text ownerText;
@@ -46,6 +53,13 @@ private:
     sf::RectangleShape endTurnButton;
     sf::Text endTurnText;
     sf::Text turnIndicatorText;
+
+    // --- Game Over UI ---
+    sf::RectangleShape gameOverPanel;
+    sf::Text txtGameOverTitle;
+    sf::Text txtWinnerName;
+    sf::RectangleShape btnReturnMain;
+    sf::Text txtReturnMain;
 
     void initMenuUI();
     void initGameUI();

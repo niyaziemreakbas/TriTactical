@@ -12,10 +12,13 @@ public:
     void colorCell(sf::Vector2i position, sf::Color color);
     void resetCellColor(sf::Vector2i position);
 
-    // GameManager'ýn harita bilgilerine eriþmesi için "getter" fonksiyonlarý
+    void regenerate(unsigned int width, unsigned int height, unsigned int windowWidth, unsigned int windowHeight);
+    bool isEmpty(sf::Vector2i pos) const;
+
     sf::Vector2f getMapOffset() const { return { mapOffsetX, mapOffsetY }; }
     float getTileSize() const { return tileSize; }
     sf::Vector2i getDimensions() const { return { mapWidth, mapHeight }; }
+	float getTileAmount() const { return mapWidth * mapHeight; }
 
 private:
     int mapWidth = 0, mapHeight = 0;
