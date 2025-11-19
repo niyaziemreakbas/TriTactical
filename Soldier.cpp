@@ -113,7 +113,6 @@ bool Soldier::moveTo(const sf::Vector2i& newPosition)
         return true; // Hareket baþarýlý.
     }
 
-    // Hareket puaný yetersiz.
     std::cout << "Move failed! Not enough points.\n";
     return false; // Hareket baþarýsýz.
 }

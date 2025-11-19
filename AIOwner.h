@@ -10,7 +10,7 @@ class AIOwner : public Owner
 {
 public:
     AIOwner(std::string name, sf::Color color);
-    void processTurn(GameManager& gameManager);
+    bool processTurn(GameManager& gameManager);
 
 private:
     Soldier* findClosestSoldier(Soldier& from, const std::vector<Soldier*>& targets);

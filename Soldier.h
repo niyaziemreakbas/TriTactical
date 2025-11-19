@@ -53,5 +53,5 @@ private:
     sf::Vector2f startPixelPos;   
 	sf::Vector2f targetPixelPos;   
 	float animationTime = 0.f;   
-    const float animationDuration = 0.25f; 
+    float animationDuration = 0.25f; 
 };

@@ -4,7 +4,10 @@
 #include <SFML/Graphics.hpp>
 #include "Owner.h"
 #include "UIManager.h"
-#include "Map.h" // Yeni harita sýnýfýmýzý dahil et
+#include "CombatManager.h"
+#include "Map.h"
+
+enum class GameMode { PvP, PvAI, AIvAI };
 
 class GameManager
 {
@@ -30,10 +33,10 @@ public:
 
 private:
     void createInitialUnits();
-
-    // War Functions can be separated to another script
+ 
     void calculateMoveableCells(Soldier* soldier);
-    bool resolveCombat(Soldier& attacker, Soldier& defender);
+
+    CombatManager combatManager;
 
     void processAITurn();
 

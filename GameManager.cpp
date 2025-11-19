@@ -38,61 +38,79 @@ void GameManager::createInitialUnits()
 
 void GameManager::update(float dt)
 {
-    // Önce, oyundaki TÜM askerlerin animasyonunu her zaman ilerlet.
+    // Animasyonlarý her zaman güncelle
     for (auto& owner : owners) {
         for (auto& soldier : owner->soldiers) {
             soldier.update(dt);
         }
     }
 
-    // Þimdi, oyunun durumuna göre karar ver.
     switch (currentGameState)
     {
-        case GameState::PLAYER_INPUT:
-            // Bu durumda hiçbir þey yapma, oyuncunun týklamasýný bekle.
-            break;
+    case GameState::PLAYER_INPUT:
+        // Oyuncu týklamasý bekleniyor (handleClick içinde iþleniyor)
+        break;
 
-        case GameState::AI_THINKING:
-        {
-            // YZ'nin düþünme zamaný!
-            AIOwner* aiOwner = dynamic_cast<AIOwner*>(owners[currentPlayerIndex].get());
-            if (aiOwner) {
-                aiOwner->processTurn(*this); // YZ tüm kararlarýný anýnda verir.
+    case GameState::AI_THINKING:
+    {
+        AIOwner* aiOwner = dynamic_cast<AIOwner*>(owners[currentPlayerIndex].get());
+        if (aiOwner) {
+            // YZ'ye "Sadece BÝR adým at" diyoruz.
+            bool didMove = aiOwner->processTurn(*this);
+
+            if (didMove) {
+                // Eðer hamle yaptýysa, animasyon moduna geç.
+                currentGameState = GameState::ANIMATING;
             }
-            break;
+            else {
+                // Eðer yapacak hamlesi kalmadýysa turu bitir.
+                std::cout << "AI finished thinking. Ending turn.\n";
+                endTurn();
+            }
+        }
+        break;
+    }
+
+    case GameState::ANIMATING:
+    {
+        // Animasyonlarýn bitip bitmediðini kontrol et.
+        bool isAnyAnimationRunning = false;
+        for (const auto& owner : owners) {
+            for (const auto& soldier : owner->soldiers) {
+                // Soldier sýnýfýna public bir isAnimating deðiþkeni veya getter eklediðinden emin ol
+                // Senin kodunda 'isAnimating' private olabilir, getter lazým olabilir.
+                // Þimdilik senin animation logic'ine güveniyoruz.
+                if (soldier.IsAnimating()) { // Soldier.h'de bunu public yap veya getter kullan
+                    isAnyAnimationRunning = true;
+                    break;
+                }
+            }
+            if (isAnyAnimationRunning) break;
         }
 
-        //case GameState::ANIMATING:
-        //{
-        //    // Animasyonlarýn bitip bitmediðini kontrol et.
-        //    bool isAnyAnimationRunning = false;
-        //    for (const auto& owner : owners) {
-        //        for (const auto& soldier : owner->soldiers) {
-        //            if (soldier.IsAnimating()) {
-        //                isAnyAnimationRunning = true;
-        //                break;
-        //            }
-        //        }
-        //        if (isAnyAnimationRunning) break;
-        //    }
-
-        //    // Eðer tüm animasyonlar bittiyse...
-        //    if (!isAnyAnimationRunning) {
-        //        std::cout << "All animations finished.\n";
-        //        // Turu bitirerek sýrayý bir sonraki oyuncuya devret.
-        //        //endTurn();
-        //    }
-        //    break;
-        //}
+        // Eðer animasyonlar bittiyse...
+        if (!isAnyAnimationRunning) {
+            // Tekrar sýranýn kimde olduðuna bak.
+            // Eðer YZ sýrasýysa, YZ düþünmeye devam etmeli (belki baþka hamlesi vardýr).
+            if (dynamic_cast<AIOwner*>(owners[currentPlayerIndex].get())) {
+                currentGameState = GameState::AI_THINKING;
+            }
+            else {
+                // Oyuncu ise (oyuncu animasyonu bittiyse) input'a dön
+                currentGameState = GameState::PLAYER_INPUT;
+            }
+        }
+        break;
+    }
     }
 }
 
 void GameManager::handleClick(int mouseX, int mouseY)
 {
-    //if (currentGameState == GameState::ANIMATING)
-    //{
-    //    return;
-    //}
+    if (currentGameState == GameState::ANIMATING)
+    {
+        return;
+    }
 
     if (uiManager.isEndTurnButtonClicked({ mouseX, mouseY }))
     {
@@ -128,7 +146,6 @@ void GameManager::handleClick(int mouseX, int mouseY)
                 executeMove(soldierToMove, clickedCell);
 
                 // 2. Hareketi baþlattýktan sonra, oyuncuya özel iþlemleri yap.
-                // (Seçimi kaldýrmak, renkleri temizlemek vb.)
                 soldierToMove->toggleSelection();
                 selectedSoldier = nullptr;
                 calculateMoveableCells(nullptr);
@@ -201,17 +218,6 @@ void GameManager::draw(sf::RenderWindow& window)
     uiManager.draw(window);
 }
 
-std::string soldierTypeToString(Soldier::Type type)
-{
-    switch (type)
-    {
-    case Soldier::Type::Square:   return "Square";
-    case Soldier::Type::Circle:   return "Circle";
-    case Soldier::Type::Triangle: return "Triangle";
-    default:                      return "Unknown";
-    }
-}
-
 sf::Vector2i GameManager::getRandomMapCell() const
 {
     const sf::Vector2i mapDims = m_map.getDimensions();
@@ -228,7 +234,6 @@ void GameManager::executeMove(Soldier* soldier, const sf::Vector2i& targetCell)
 {
     if (soldier == nullptr) return;
 
-    // 1. Piksel pozisyonlarýný hesapla.
     const sf::Vector2f mapOffset = m_map.getMapOffset();
     const float tileSize = m_map.getTileSize();
     sf::Vector2f startPixel = {
@@ -240,12 +245,11 @@ void GameManager::executeMove(Soldier* soldier, const sf::Vector2i& targetCell)
         mapOffset.y + (targetCell.y * tileSize) + (tileSize / 2)
     };
 
-    // 2. MANTIKSAL hareketi anýnda yap.
-    // (Bu kýsmý Soldier::moveTo'ya zaten taþýmýþtýk, onu kullanalým!)
     if (soldier->moveTo(targetCell))
     {
-        // 3. GÖRSEL animasyonu baþlat.
         soldier->startMoveAnimation(startPixel, targetPixel);
+
+        checkForCombat(soldier);
     }
 }
 
@@ -352,7 +356,6 @@ Soldier* GameManager::getSoldierAt(sf::Vector2i position) const
 
 void GameManager::endTurn()
 {
-    // 1. Mevcut seçimleri temizle.
     if (selectedSoldier != nullptr)
     {
         selectedSoldier->toggleSelection();
@@ -360,32 +363,34 @@ void GameManager::endTurn()
     }
     moveableCells.clear();
 
-    // 2. Sýradaki oyuncuya geç. Modulo (%) operatörü, listenin sonuna gelince baþa dönmemizi saðlar.
     currentPlayerIndex = (currentPlayerIndex + 1) % owners.size();
 
-    // 3. YENÝ oyuncunun TÜM askerlerinin hareket puanlarýný yenile.
     Owner* newPlayer = owners[currentPlayerIndex].get();
     for (auto& soldier : newPlayer->soldiers)
     {
         soldier.resetMovementPoints();
+
+        checkForCombat(&soldier);
     }
     uiManager.update(selectedSoldier, owners[currentPlayerIndex]->name);
 
-    // (Opsiyonel) Konsola kimin sýrasý geldiðini yazdýr.
     std::cout << "--- New Turn: " << newPlayer->name << " ---\n";
 
+	// AI turn
     if (dynamic_cast<AIOwner*>(newPlayer) != nullptr)
     {
 		SetPlayerTurn(false);
         currentGameState = GameState::AI_THINKING;
-        uiManager.setEndTurnButtonActive(false); // Butonu pasif yap ve yazýyý deðiþtir.
+        uiManager.setEndTurnButtonActive(false); 
         processAITurn(); 
     }
-    else // Eðer yeni oyuncu insansa
+
+    // Human turn
+	else 
     {
         SetPlayerTurn(true);
         currentGameState = GameState::PLAYER_INPUT;
-        uiManager.setEndTurnButtonActive(true); // Butonu tekrar aktif yap.
+        uiManager.setEndTurnButtonActive(true);
     }
 }
 
@@ -407,78 +412,17 @@ bool GameManager::checkForCombat(Soldier* movedSoldier)
     {
         Soldier* neighborSoldier = getSoldierAt(neighborPos);
 
-        // Eðer komþuda bir asker varsa VE bu asker bir düþmansa...
         if (neighborSoldier != nullptr && neighborSoldier->owner != movedSoldier->owner)
         {
             std::cout << "COMBAT! " << movedSoldier->owner->name << " vs " << neighborSoldier->owner->name << "\n";
-            return  resolveCombat(*movedSoldier, *neighborSoldier);
+            return  combatManager.resolveCombat(*movedSoldier, *neighborSoldier, selectedSoldier);
         }
     }
     return false;
 }
 
-bool GameManager::resolveCombat(Soldier& attacker, Soldier& defender)
-{
-    Soldier::Type attType = attacker.type;
-    Soldier::Type defType = defender.type;
-
-    Soldier* winner = nullptr;
-    Soldier* loser = nullptr;
-
-    bool attackResult;
-
-    // Triangle > Circle > Square > Triangle
-    if ((attType == Soldier::Type::Triangle && defType == Soldier::Type::Circle) ||
-        (attType == Soldier::Type::Circle && defType == Soldier::Type::Square) ||
-        (attType == Soldier::Type::Square && defType == Soldier::Type::Triangle))
-    {
-        winner = &attacker;
-        loser = &defender;
-        attackResult = true;
-    }
-    else if ((defType == Soldier::Type::Triangle && attType == Soldier::Type::Circle) ||
-        (defType == Soldier::Type::Circle && attType == Soldier::Type::Square) ||
-        (defType == Soldier::Type::Square && attType == Soldier::Type::Triangle))
-    {
-        winner = &defender;
-        loser = &attacker;
-        attackResult = false;
-    }
-    else 
-    {
-        std::cout << "Combat is a draw. " << soldierTypeToString(attType) << " " << soldierTypeToString(defType) << " No change.\n";
-        return false;
-    }
-
-    std::cout << winner->owner->name << " wins the battle!\n";
-
-    //Owner* oldOwner = loser->owner;
-    Owner* newOwner = winner->owner;
-
-    // 1. Kaybeden askerin sahibini ve rengini deðiþtir.
-    loser->setOwner(newOwner);
-
-	loser->setCurrentPoints(-loser->getCurrentPoints());
-    winner->setCurrentPoints(-winner->getCurrentPoints());
-
-    return attackResult;
-}
-
-// Ve iþte her þeyi birleþtiren ana YZ fonksiyonu!
 void GameManager::processAITurn()
 {
-    std::cout << "--- AI is thinking... ---\n";
-    //std::this_thread::sleep_for(std::chrono::milliseconds(500));
-
-    // Sýrasý gelen YZ'yi bul.
-    AIOwner* aiOwner = dynamic_cast<AIOwner*>(owners[currentPlayerIndex].get());
-    if (aiOwner)
-    {
-        // YZ'ye dünyayý göster ve oynamasýný söyle.
-        aiOwner->processTurn(*this);
-    }
-
-    std::cout << "AI finished its turn.\n";
-    //std::this_thread::sleep_for(std::chrono::milliseconds(500));
-    endTurn();
+    std::cout << "--- AI turn started ---\n";
+    currentGameState = GameState::AI_THINKING;
 }

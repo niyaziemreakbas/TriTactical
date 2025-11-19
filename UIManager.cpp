@@ -84,7 +84,7 @@ void UIManager::setEndTurnButtonActive(bool isActive)
     else
     {
         endTurnButton.setFillColor(sf::Color(80, 80, 80)); // Pasif gri renk
-        endTurnText.setString("AI is Thinking...");
+        endTurnText.setString("Thinking...");
     }
 }
 
