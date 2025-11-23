@@ -39,9 +39,8 @@ void GameManager::startGame(GameMode mode, int numHumans, int numBots)
         sf::Color::Yellow,
         sf::Color::Magenta,
         sf::Color::Cyan,
-        sf::Color(255, 165, 0), // Turuncu
-        sf::Color(128, 0, 128), // Mor
-        sf::Color(0, 255, 127)  // Spring Green
+        sf::Color(255, 165, 0), // Orange
+        sf::Color(128, 0, 128), // Purple
     };
 
     // Renkleri karýþtýr (Shuffle)
@@ -55,13 +54,49 @@ void GameManager::startGame(GameMode mode, int numHumans, int numBots)
     moveableCells.clear();
     attackableCells.clear();
 
-    // 2. Harita Boyutunu Hesapla (Basit Algoritma)
-    // Her oyuncu için yaklaþýk 5x5'lik bir alan ayýralým. Minimum 8x8 olsun.
     int totalPlayers = numHumans + numBots;
-    int mapDim = 8 + (totalPlayers * 2); // Örn: 2 kiþi -> 12x12, 4 kiþi -> 16x16
 
-    // Haritayý yeniden oluþtur (Pencere boyutunu constructor'dan saklaman gerekebilir veya sabit 1366x768 varsayabiliriz)
-    m_map.regenerate(mapDim, mapDim, 1366, 768);
+    // Oyuncu baþýna 9 ile 12 arasýnda rastgele bir alan belirle (Böylece harita sýkýþýk veya ferah olabilir)
+    std::uniform_int_distribution<> tilePerPlayerDist(8, 12);
+    int tilesPerPlayer = tilePerPlayerDist(g); // 'g' yukarýdaki random generator
+
+    // Minimum harita boyutu (Çok küçük olmamasý için güvenlik)
+	int targetArea = totalPlayers * tilesPerPlayer;
+
+    // Harita sýnýrlarý
+    const int MAX_WIDTH = 16;
+    const int MAX_HEIGHT = 14;
+    const int MIN_DIM = 6;
+
+    // Geniþliði rastgele belirlemeye çalýþalým, Yüksekliði ona göre ayarlayalým
+    int width, height;
+
+    bool sizeFound = false;
+    for (int attempt = 0; attempt < 20; ++attempt) {
+        // Geniþliði Min ve Max arasýnda rastgele seç
+        std::uniform_int_distribution<> widthDist(MIN_DIM, MAX_WIDTH);
+        width = widthDist(g);
+
+        // Yüksekliði hesapla (Alan / Geniþlik)
+        height = targetArea / width;
+
+        // Yükseklik sýnýrlara uyuyor mu?
+        if (height >= MIN_DIM && height <= MAX_HEIGHT) {
+            sizeFound = true;
+            break;
+        }
+    }
+
+    // Eðer uygun boyut bulamazsa (çok nadir), varsayýlan güvenli bir boyut ata
+    if (!sizeFound) {
+        width = std::min(MAX_WIDTH, 8 + totalPlayers);
+        height = std::min(MAX_HEIGHT, 8 + totalPlayers);
+    }
+
+    std::cout << "Map Generated: " << width << "x" << height << " (Target Area: " << targetArea << ")\n";
+
+    // Haritayý yeniden oluþtur
+    m_map.regenerate(width, height, 1366, 768);
 
     int colorIndex = 0;
 
@@ -102,11 +137,6 @@ void GameManager::startGame(GameMode mode, int numHumans, int numBots)
     // 5. Tur Sistemini Baþlat
     currentPlayerIndex = 0;
 
-    // Ýlk tur için savaþ kontrolü ve UI güncellemesi
-    for (auto& soldier : owners[currentPlayerIndex]->soldiers) {
-        checkForCombat(&soldier);
-    }
-
     // AI kontrolü
     if (dynamic_cast<AIOwner*>(owners[0].get())) {
         currentGameState = GameState::AI_THINKING;
@@ -126,12 +156,24 @@ void GameManager::checkWinCondition()
     int activeOwners = 0;
     std::string potentialWinner = "";
 
+    bool hasTriangle = false;
+    bool hasCircle = false;
+    bool hasSquare = false;
+
     for (const auto& owner : owners)
     {
         if (!owner->soldiers.empty())
         {
             activeOwners++;
+
             potentialWinner = owner->name;
+
+            for (const auto& soldier : owner->soldiers)
+            {
+                if (soldier.type == Soldier::Type::Triangle) hasTriangle = true;
+                else if (soldier.type == Soldier::Type::Circle) hasCircle = true;
+                else if (soldier.type == Soldier::Type::Square) hasSquare = true;
+            }
         }
     }
 
@@ -139,8 +181,54 @@ void GameManager::checkWinCondition()
     if (activeOwners <= 1)
     {
         m_isGameOver = true;
-        m_winnerName = (activeOwners == 1) ? potentialWinner : "Draw / No Winner";
+        m_winnerName = (activeOwners == 1) ? "Winner: " + potentialWinner : "Draw / No Winner";
         std::cout << "GAME OVER! Winner: " << m_winnerName << "\n";
+    }
+    else
+    {
+        int distinctTypes = 0;
+        if (hasTriangle) distinctTypes++;
+        if (hasCircle) distinctTypes++;
+        if (hasSquare) distinctTypes++;
+
+        if (distinctTypes == 1)
+        {
+            m_isGameOver = true;
+            int maxCount = -1;
+            std::string leaderName = "";
+            bool isTie = false; // En yüksek sayýya sahip birden fazla kiþi var mý?
+
+            for (const auto& owner : owners)
+            {
+                // Ölü oyuncularý sayma
+                if (owner->soldiers.empty()) continue;
+
+                int count = static_cast<int>(owner->soldiers.size());
+
+                if (count > maxCount)
+                {
+                    maxCount = count;
+                    leaderName = owner->name;
+                    isTie = false; // Yeni bir lider bulundu, eþitlik bozuldu
+                }
+                else if (count == maxCount)
+                {
+                    isTie = true; // Liderle ayný sayýda askeri olan biri daha var
+                }
+            }
+
+            if (isTie)
+            {
+                m_winnerName = "DRAW (Equal Forces)";
+            }
+            else
+            {
+                // Parantez içinde kazanma sebebini yazalým
+                m_winnerName = leaderName + " (Army Size)";
+            }
+
+            std::cout << "GAME OVER! Stalemate resolved. Winner: " << m_winnerName << "\n";
+        }
     }
 }
 
@@ -289,6 +377,8 @@ void GameManager::handleClick(int mouseX, int mouseY)
             calculateMoveableCells(selectedSoldier);
         }
     }
+
+	checkWinCondition();
     uiManager.updateGameUI(selectedSoldier, owners[currentPlayerIndex]->name);
 }
 

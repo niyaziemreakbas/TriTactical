@@ -31,7 +31,8 @@ txtAIvAI(font, "AI vs AI", 24),
 //End Game Texts
 txtGameOverTitle(font, "GAME OVER", 60),
 txtWinnerName(font, "", 40),
-txtReturnMain(font, "Main Menu", 24)
+txtReturnMain(font, "Main Menu", 24),
+txtRestart(font, "Restart Game", 24)
 {
     LoadFont(font, "Assets/RockwellNova.ttf");
     
@@ -194,8 +195,8 @@ void UIManager::initGameUI()
     txtWinnerName.setFillColor(sf::Color::Yellow);
     // Pozisyonu draw fonksiyonunda winner ismine göre ortalayacaðýz, þimdilik boþ kalsýn.
 
-    // Ana Menüye Dön Butonu (Panelin içinde)
-    createBtn(btnReturnMain, txtReturnMain, "Main Menu", 500.f, sf::Color(50, 50, 50));
+    createBtn(btnRestart, txtRestart, "Restart Game", 450.f, sf::Color(0, 100, 0)); // Koyu Yeþil
+    createBtn(btnReturnMain, txtReturnMain, "Main Menu", 550.f, sf::Color(50, 50, 50));
 }
 
 void UIManager::drawGameOverScreen(sf::RenderWindow& window, std::string winnerName)
@@ -205,14 +206,16 @@ void UIManager::drawGameOverScreen(sf::RenderWindow& window, std::string winnerN
     window.draw(txtGameOverTitle);
 
     // Kazanan yazýsýný güncelle ve ortala
-    txtWinnerName.setString("Winner: " + winnerName);
+    txtWinnerName.setString(winnerName);
     sf::FloatRect bounds = txtWinnerName.getLocalBounds();
     txtWinnerName.setOrigin(bounds.position + bounds.size / 2.f);
     txtWinnerName.setPosition(sf::Vector2f(1366.f / 2.f, 350.f));
 
     window.draw(txtWinnerName);
 
-    // Butonu çiz
+    window.draw(btnRestart);
+    window.draw(txtRestart);
+
     window.draw(btnReturnMain);
     window.draw(txtReturnMain);
 }
@@ -220,7 +223,11 @@ void UIManager::drawGameOverScreen(sf::RenderWindow& window, std::string winnerN
 MenuAction UIManager::handleGameOverClick(int x, int y)
 {
     sf::Vector2f mPos(static_cast<float>(x), static_cast<float>(y));
+
     if (btnReturnMain.getGlobalBounds().contains(mPos)) return MenuAction::ReturnToMain;
+
+    if (btnRestart.getGlobalBounds().contains(mPos)) return MenuAction::RestartGame;
+
     return MenuAction::None;
 }
 
@@ -332,9 +339,10 @@ void UIManager::updateGameUI(Soldier* selectedSoldier, const std::string& curren
         }
         typeText.setString(typeStr);
 
-        statsText.setString("Move Points: " + std::to_string(selectedSoldier->getCurrentPoints()));
+        std::string stats = "Move: " + std::to_string(selectedSoldier->getCurrentPoints());
+        stats += "\nHP: " + std::to_string(selectedSoldier->getHp()) + " / 3"; // <-- YENÝ
 
-		std::cout << "UI updated for selected soldier.\n";
+        statsText.setString(stats);
     }
     else
     {

@@ -1,4 +1,5 @@
 #include "AIOwner.h"
+#include "Pathfinder.h"
 #include <random>
 #include <iostream>
 
@@ -39,34 +40,17 @@ sf::Vector2i AIOwner::calculateMoveTowards(const Soldier& from, const sf::Vector
     return nextPos;
 }
 
-// Bir tehditten UZAKLAÞACAK bir sonraki en iyi adýmý hesaplar.
-sf::Vector2i AIOwner::calculateMoveAway(const Soldier& from, const sf::Vector2i& threatPos)
-{
-    sf::Vector2i startPos = from.gridPosition;
-    int dx = threatPos.x - startPos.x;
-    int dy = threatPos.y - startPos.y;
-    sf::Vector2i nextPos = startPos;
-
-    // Yönün tam tersini uygula
-    if (abs(dx) > abs(dy)) {
-        nextPos.x -= (dx > 0) ? 1 : -1;
-    }
-    else if (dy != 0) {
-        nextPos.y -= (dy > 0) ? 1 : -1;
-    }
-    return nextPos;
-}
-
 bool AIOwner::processTurn(GameManager& gameManager)
 {
     const auto& allOwners = gameManager.getOwners();
 
-    // Askerleri sýrayla kontrol et
+    // Her bir askerimiz için...
     for (auto& soldier : this->soldiers)
     {
-        // Eðer askerin hareket puaný yoksa diðer askere geç
+        // Hareket puaný yoksa pas geç
         if (soldier.getCurrentPoints() <= 0) continue;
 
+        // 1. ANALÝZ: Düþmanlarý sýnýflandýr
         std::vector<Soldier*> winnableTargets;
         std::vector<Soldier*> losingTargets;
 
@@ -87,46 +71,45 @@ bool AIOwner::processTurn(GameManager& gameManager)
             }
         }
 
-        sf::Vector2i moveTarget;
-        bool hasTarget = false;
+        // 2. HEDEF BELÝRLEME (Sadece hedefi seçiyoruz, hareketi Pathfinder yapacak)
+        sf::Vector2i finalDestination = { -1, -1 };
+        bool wantsToFlee = false; // Kaçma durumu özeldir
 
-        // DURUM 1: SALDIRI
+        // DURUM 1: SALDIRI (En yakýn yenebileceðimiz düþman)
         if (!winnableTargets.empty()) {
             Soldier* target = findClosestSoldier(soldier, winnableTargets);
             if (target) {
-                moveTarget = calculateMoveTowards(soldier, target->gridPosition);
-                hasTarget = true;
+                finalDestination = target->gridPosition;
             }
-        }
-        // DURUM 2: KAÇIÞ
-        else if (!losingTargets.empty()) {
-            Soldier* threat = findClosestSoldier(soldier, losingTargets);
-            if (threat) {
-                moveTarget = calculateMoveAway(soldier, threat->gridPosition);
-                hasTarget = true;
-            }
-        }
-        // DURUM 3: GEZÝNME
-        else
-        {
-            sf::Vector2i randomCell = gameManager.getRandomMapCell();
-            moveTarget = calculateMoveTowards(soldier, randomCell);
-            hasTarget = true;
         }
 
-        // 3. HAREKETÝ UYGULA
-        if (hasTarget && soldier.gridPosition != moveTarget)
+        // DURUM 2: GEZÝNME (Veya kaçacak yer bulamadýysa rastgele kaçýþ)
+        if (finalDestination == sf::Vector2i(-1, -1))
         {
-            if (gameManager.getSoldierAt(moveTarget) == nullptr)
+            sf::Vector2i rnd = gameManager.findRandomEmptyCell();
+        }
+
+        // 3. PATHFINDER ÝLE HAREKET ET
+        if (finalDestination != sf::Vector2i(-1, -1) && finalDestination != soldier.gridPosition)
+        {
+            // Pathfinder bize tüm yolu verir: [Adým1, Adým2, ..., Hedef]
+            std::vector<sf::Vector2i> path = Pathfinder::findPath(soldier.gridPosition, finalDestination, gameManager);
+
+            if (!path.empty())
             {
-                gameManager.executeMove(&soldier, moveTarget);
-                // BÝR HAMLE YAPILDI. Fonksiyondan çýk ve true döndür.
-                // Oyun döngüsü animasyonu oynatacak, sonra tekrar buraya gelecek.
-                return true;
+                // Biz sadece yolun ÝLK ADIMINI atacaðýz.
+                // Çünkü her adýmdan sonra dünya deðiþebilir (savaþ vs.)
+                sf::Vector2i nextStep = path[0];
+
+                // Gideceðimiz yer boþ mu? (Pathfinder düþmaný hedef aldýðýnda son adým doludur)
+                if (gameManager.getSoldierAt(nextStep) == nullptr)
+                {
+                    gameManager.executeMove(&soldier, nextStep);
+                    return true; // Bir hamle yapýldý, turu döndür.
+                }
             }
         }
     }
 
-    // Eðer buraya geldiysek, hiçbir askerin yapacak hamlesi veya puaný kalmamýþ demektir.
-    return false;
+    return false; // Yapacak hamle kalmadý
 }

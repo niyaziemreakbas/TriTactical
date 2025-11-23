@@ -35,11 +35,19 @@ bool CombatManager::resolveCombat(Soldier& attacker, Soldier& defender, Soldier*
     std::cout << winner->owner->name << " wins! (" << soldierTypeToString(winner->type)
         << " vs " << soldierTypeToString(loser->type) << ")\n";
 
-    // Kazanan yorulur
     winner->setCurrentPoints(-abs(winner->getCurrentPoints()));
 
-    // Kaybeden transfer edilir
-    transferSoldier(loser, winner->owner, selectedSoldierRef);
+    loser->takeDamage(1);
+    std::cout << "Loser HP: " << loser->getHp() << "\n";
+
+    if (loser->isDead())
+    {
+        killSoldier(loser, selectedSoldierRef);
+    }
+    else
+    {
+        transferSoldier(loser, winner->owner, selectedSoldierRef);
+    }
 
     return attackResult;
 }
@@ -81,5 +89,25 @@ std::string CombatManager::soldierTypeToString(Soldier::Type type)
     case Soldier::Type::Circle: return "Circle";
     case Soldier::Type::Triangle: return "Triangle";
     default: return "Unknown";
+    }
+}
+
+void CombatManager::killSoldier(Soldier* soldierToKill, Soldier*& selectedSoldierRef)
+{
+    Owner* owner = soldierToKill->owner;
+
+    std::cout << "Soldier died! Removing from " << owner->name << "\n";
+
+    if (selectedSoldierRef == soldierToKill) {
+        selectedSoldierRef = nullptr;
+    }
+
+    for (size_t i = 0; i < owner->soldiers.size(); ++i)
+    {
+        if (&owner->soldiers[i] == soldierToKill)
+        {
+            owner->soldiers.erase(owner->soldiers.begin() + i);
+            break;
+        }
     }
 }

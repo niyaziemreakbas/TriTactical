@@ -36,8 +36,12 @@ public:
     void startMoveAnimation(const sf::Vector2f& startPixel, const sf::Vector2f& targetPixel);
     bool IsAnimating() const { return isAnimating; }
 
-private:
+    int getHp() const { return hp; }
+    void takeDamage(int amount) { hp -= amount; }
+    bool isDead() const { return hp <= 0; }
 
+private:
+    int hp = 3;
     int cost = 30;
     int movementPoints = 3;
 	int currentMovementPoints = movementPoints;

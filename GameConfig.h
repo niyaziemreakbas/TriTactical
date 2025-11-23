@@ -23,5 +23,6 @@ enum class MenuAction {
     BackToMenu,
     IncHuman, DecHuman,
     IncAI, DecAI,
-    ReturnToMain
+    ReturnToMain,
+    RestartGame
 };

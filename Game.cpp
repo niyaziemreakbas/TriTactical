@@ -119,6 +119,14 @@ void Game::processEvents()
                     {
                         currentState = AppState::MainMenu;
                     }
+                    else if (action == MenuAction::RestartGame)
+                    {
+                        std::cout << "Restarting Game...\n";
+
+                        gameManager.startGame(selectedMode, numHumans, numAI);
+
+                        currentState = AppState::Gameplay;
+                    }
                 }
             }
         }

@@ -18,7 +18,7 @@ public:
     sf::Vector2f getMapOffset() const { return { mapOffsetX, mapOffsetY }; }
     float getTileSize() const { return tileSize; }
     sf::Vector2i getDimensions() const { return { mapWidth, mapHeight }; }
-	float getTileAmount() const { return mapWidth * mapHeight; }
+	int getTileAmount() const { return mapWidth * mapHeight; }
 
 private:
     int mapWidth = 0, mapHeight = 0;

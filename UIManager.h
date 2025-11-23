@@ -59,7 +59,9 @@ private:
     sf::Text txtGameOverTitle;
     sf::Text txtWinnerName;
     sf::RectangleShape btnReturnMain;
-    sf::Text txtReturnMain;
+    sf::Text txtReturnMain; 
+    sf::RectangleShape btnRestart;
+    sf::Text txtRestart;
 
     void initMenuUI();
     void initGameUI();
