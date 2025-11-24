@@ -83,6 +83,22 @@ bool Map::isEmpty(sf::Vector2i pos) const
     return (pos.x >= 0 && pos.x < mapWidth && pos.y >= 0 && pos.y < mapHeight);
 }
 
+void Map::updateMapPosition(unsigned int windowWidth, unsigned int windowHeight)
+{
+    mapOffsetX = (windowWidth - totalMapWidth) / 2.0f;
+    mapOffsetY = (windowHeight - totalMapHeight) / 2.0f;
+
+    // Tüm karelerin pozisyonunu güncelle
+    for (int x = 0; x < mapWidth; ++x) {
+        for (int y = 0; y < mapHeight; ++y) {
+            grid[x][y].shape.setPosition(sf::Vector2f(
+                mapOffsetX + (x * tileSize),
+                mapOffsetY + (y * tileSize)
+            ));
+        }
+    }
+}
+
 void Map::colorCell(sf::Vector2i position, sf::Color color)
 {
     if (position.x >= 0 && position.x < mapWidth && position.y >= 0 && position.y < mapHeight) {

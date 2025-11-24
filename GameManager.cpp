@@ -148,7 +148,7 @@ void GameManager::startGame(GameMode mode, int numHumans, int numBots)
         uiManager.setEndTurnButtonActive(true);
     }
 
-    uiManager.updateGameUI(nullptr, owners[currentPlayerIndex]->name);
+    uiManager.updateGameUI(nullptr, owners[currentPlayerIndex].get());
 }
 
 void GameManager::checkWinCondition()
@@ -379,7 +379,7 @@ void GameManager::handleClick(int mouseX, int mouseY)
     }
 
 	checkWinCondition();
-    uiManager.updateGameUI(selectedSoldier, owners[currentPlayerIndex]->name);
+    uiManager.updateGameUI(selectedSoldier, owners[currentPlayerIndex].get());
 }
 
 void GameManager::draw(sf::RenderWindow& window)
@@ -607,7 +607,7 @@ void GameManager::endTurn()
 
         checkForCombat(&soldier);
     }
-    uiManager.updateGameUI(selectedSoldier, owners[currentPlayerIndex]->name);
+    uiManager.updateGameUI(selectedSoldier, owners[currentPlayerIndex].get());
 
     std::cout << "--- New Turn: " << newPlayer->name << " ---\n";
 
@@ -660,4 +660,10 @@ void GameManager::processAITurn()
 {
     std::cout << "--- AI turn started ---\n";
     currentGameState = GameState::AI_THINKING;
+}
+
+void GameManager::onWindowResize(unsigned int w, unsigned int h)
+{
+    m_map.updateMapPosition(w, h);
+    // UI Manager'ý Game.cpp'den güncelleyeceðiz, buraya gerek yok.
 }

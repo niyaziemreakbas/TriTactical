@@ -15,7 +15,7 @@ private:
     void render();
 
     AppState currentState = AppState::MainMenu;
-    GameMode selectedMode;
+    GameMode selectedMode = GameMode::PvP;
     int numHumans = 0;
     int numAI = 0;
 

@@ -20,6 +20,9 @@ public:
     sf::Vector2i getDimensions() const { return { mapWidth, mapHeight }; }
 	int getTileAmount() const { return mapWidth * mapHeight; }
 
+	// Adjusts map position based on window size
+    void updateMapPosition(unsigned int windowWidth, unsigned int windowHeight);
+
 private:
     int mapWidth = 0, mapHeight = 0;
     float tileSize = 50.0f;

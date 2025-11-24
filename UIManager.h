@@ -15,7 +15,7 @@ public:
     MenuAction handleSetupClick(int x, int y);
 
     //In Game UI functions
-    void updateGameUI(Soldier* selectedSoldier, const std::string& currentPlayerName);
+    void updateGameUI(Soldier* selectedSoldier, Owner* currentOwner);
     void drawGameUI(sf::RenderWindow& window);
 
     bool isEndTurnButtonClicked(sf::Vector2i mousePos);
@@ -27,15 +27,17 @@ public:
     void drawGameOverScreen(sf::RenderWindow& window, std::string winnerName);
     MenuAction handleGameOverClick(int x, int y);
 
+    void onResize(unsigned int width, unsigned int height);
+
 private:
     sf::Font font;
 
-	// Main Menu Texts
+	// Main Menu UI
     sf::Text titleText;
     sf::RectangleShape btnPvP, btnPvAI, btnAIvAI;
     sf::Text txtPvP, txtPvAI, txtAIvAI;
 
-	// Setup Menu Texts
+	// Setup Menu UI
     sf::Text setupTitleText;
     sf::Text setupInfoText;
     sf::RectangleShape btnStartGame, btnBack;
@@ -44,8 +46,10 @@ private:
     sf::RectangleShape btnIncAI, btnDecAI;
     sf::Text txtHumanCount, txtAICount;
     sf::Text labelHuman, labelAI;
+    sf::Text txtIncHuman, txtDecHuman;
+    sf::Text txtIncAI, txtDecAI;
 
-    // In Game Texts
+    // In Game UI
     sf::Text ownerText;
     sf::Text typeText;
     sf::Text statsText;
@@ -53,6 +57,8 @@ private:
     sf::RectangleShape endTurnButton;
     sf::Text endTurnText;
     sf::Text turnIndicatorText;
+    sf::RectangleShape turnColorBox;   // Beyaz Kare
+    sf::CircleShape turnColorCircle;   // Renkli Daire
 
     // --- Game Over UI ---
     sf::RectangleShape gameOverPanel;

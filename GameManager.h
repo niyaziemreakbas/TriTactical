@@ -33,6 +33,8 @@ public:
     bool isGameOver() const { return m_isGameOver; }
     std::string getWinnerName() const { return m_winnerName; }
 
+    void onWindowResize(unsigned int w, unsigned int h);
+
 private: 
     bool m_isGameOver = false;
     std::string m_winnerName = "";

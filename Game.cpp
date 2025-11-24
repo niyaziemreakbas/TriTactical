@@ -31,6 +31,23 @@ void Game::processEvents()
     {
         if (event->is<sf::Event::Closed>()) window.close();
 
+        if (const auto* resized = event->getIf<sf::Event::Resized>())
+        {
+            // 1. Yeni boyutlarý al
+            unsigned int w = resized->size.x;
+            unsigned int h = resized->size.y;
+
+            // 2. View (Kamera) Ayarý: Görüntü bozulmasýn, alan geniþlesin
+            sf::FloatRect visibleArea({ 0.f, 0.f }, { static_cast<float>(w), static_cast<float>(h) });
+            window.setView(sf::View(visibleArea));
+
+            // 3. UI Elemanlarýný yeni boyuta göre hizala
+            uiManager.onResize(w, h);
+
+            // 4. Haritayý tekrar ortala
+            gameManager.onWindowResize(w, h);
+        }
+
         if (const auto* mouseBtn = event->getIf<sf::Event::MouseButtonPressed>())
         {
             if (mouseBtn->button == sf::Mouse::Button::Left)

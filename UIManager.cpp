@@ -21,6 +21,10 @@ labelHuman(font, "Humans:", 24),
 txtHumanCount(font, "1", 30),
 labelAI(font, "AI Bots:", 24),
 txtAICount(font, "1", 30),
+txtIncHuman(font, "+", 30),
+txtDecHuman(font, "-", 30),
+txtIncAI(font, "+", 30),
+txtDecAI(font, "-", 30),
 
 //Main Menu Texts
 titleText(font, "TRI-TACTICAL", 60),
@@ -38,6 +42,8 @@ txtRestart(font, "Restart Game", 24)
     
 	initGameUI();
     initMenuUI();
+
+    onResize(1366, 768);
 
     std::cout << "UIManager initialized successfully.\n";
 }
@@ -132,6 +138,18 @@ void UIManager::initMenuUI()
     // Info text uzun metin olacaðý için origin deðiþtirmeyelim, sol üst kalsýn
     setupInfoText.setPosition(sf::Vector2f(500.f, 150.f));
 
+    auto centerTextOnBtn = [&](sf::Text& txt, sf::RectangleShape& btn) {
+        txt.setFillColor(sf::Color::White);
+        sf::FloatRect bounds = txt.getLocalBounds();
+        txt.setOrigin(bounds.position + bounds.size / 2.f);
+        // Pozisyon onResize içinde ayarlanacak
+        };
+
+    centerTextOnBtn(txtIncHuman, btnIncHuman);
+    centerTextOnBtn(txtDecHuman, btnDecHuman);
+    centerTextOnBtn(txtIncAI, btnIncAI);
+    centerTextOnBtn(txtDecAI, btnDecAI);
+
     createBtn(btnStartGame, txtStartGame, "START BATTLE", 500.f, sf::Color(200, 100, 0));
     createBtn(btnBack, txtBack, "Back", 600.f, sf::Color(50, 50, 50));
 }
@@ -199,6 +217,123 @@ void UIManager::initGameUI()
     createBtn(btnReturnMain, txtReturnMain, "Main Menu", 550.f, sf::Color(50, 50, 50));
 }
 
+void UIManager::onResize(unsigned int width, unsigned int height)
+{
+    float w = static_cast<float>(width);
+    float h = static_cast<float>(height);
+
+    // --- MAIN MENU ---
+    // Baþlýk: Ekranýn tam ortasý, yukarýdan 100px
+    titleText.setPosition(sf::Vector2f(w / 2.f, h * 0.15f)); // Yükseklik %15
+
+    // Butonlar: Ortada sýralý
+    // createBtn fonksiyonunu her seferinde çaðýrmak yerine sadece pozisyon güncelleyeceðiz
+    // (createBtn içinde setPosition yapýyorduk, onu artýk burada manuel güncelleyeceðiz veya createBtn'i akýllý yapacaðýz.
+    // Þimdilik manuel güncelleyelim)
+
+    float btnX = (w - 300.f) / 2.f; // (Ekran - ButonGeniþliði) / 2
+
+    btnPvP.setPosition(sf::Vector2f(btnX, h * 0.35f));
+    txtPvP.setPosition(btnPvP.getPosition() + btnPvP.getSize() / 2.f); // Text'i butona göre ortala
+
+    btnPvAI.setPosition(sf::Vector2f(btnX, h * 0.45f));
+    txtPvAI.setPosition(btnPvAI.getPosition() + btnPvAI.getSize() / 2.f);
+
+    btnAIvAI.setPosition(sf::Vector2f(btnX, h * 0.55f));
+    txtAIvAI.setPosition(btnAIvAI.getPosition() + btnAIvAI.getSize() / 2.f);
+
+    // --- SETUP MENU ---
+    // Benzer mantýkla ortala...
+    setupTitleText.setPosition(sf::Vector2f(w / 2.f, h * 0.1f));
+    setupInfoText.setPosition(sf::Vector2f(w * 0.35f, h * 0.25f)); // Sol tarafa yakýn
+
+    // +/- Butonlarýný da w ve h'ye göre oranlayarak yerleþtirmen lazým.
+    // Örnek: btnDecHuman.setPosition(w * 0.5f, h * 0.3f); vb.
+
+    float centerX = w / 2.f;
+    float setupY = h * 0.3f;
+
+    // ... (btnDecHuman, btnIncHuman setPosition satýrlarýnýn altýna ekle) ...
+
+    // Ýnsan Butonlarý Yazý Hizalamasý
+    txtDecHuman.setPosition(btnDecHuman.getPosition() + btnDecHuman.getSize() / 2.f);
+    txtIncHuman.setPosition(btnIncHuman.getPosition() + btnIncHuman.getSize() / 2.f);
+
+    // AI Butonlarý Yazý Hizalamasý
+    txtDecAI.setPosition(btnDecAI.getPosition() + btnDecAI.getSize() / 2.f);
+    txtIncAI.setPosition(btnIncAI.getPosition() + btnIncAI.getSize() / 2.f);
+
+    btnStartGame.setPosition(sf::Vector2f(btnX, h * 0.7f));
+    txtStartGame.setPosition(btnStartGame.getPosition() + btnStartGame.getSize() / 2.f);
+
+    btnBack.setPosition(sf::Vector2f(btnX, h * 0.8f));
+    txtBack.setPosition(btnBack.getPosition() + btnBack.getSize() / 2.f);
+
+    // --- GAME OVER ---
+    gameOverPanel.setSize(sf::Vector2f(w, h)); // Tam ekran
+    gameOverPanel.setPosition(sf::Vector2f(0, 0));
+
+    txtGameOverTitle.setPosition(sf::Vector2f(w / 2.f, h * 0.3f));
+    txtWinnerName.setPosition(sf::Vector2f(w / 2.f, h * 0.45f));
+
+    btnRestart.setPosition(sf::Vector2f(btnX, h * 0.6f));
+    txtRestart.setPosition(btnRestart.getPosition() + btnRestart.getSize() / 2.f);
+
+    btnReturnMain.setPosition(sf::Vector2f(btnX, h * 0.75f));
+    txtReturnMain.setPosition(btnReturnMain.getPosition() + btnReturnMain.getSize() / 2.f);
+
+    // --- OYUN ÝÇÝ UI (SOL ÜST VE SAÐ ALT) ---
+    // 1. Panelin konumu (Sol Alt Köþe)
+    float panelX = 20.f;
+    float panelY = h - 150.f;
+
+    infoPanel.setPosition(sf::Vector2f(panelX, panelY));
+
+    // 2. Yazýlarýn Konumu (Padding Ekleme)
+    // Yazýlarý panelin baþladýðý yerden (panelX) 15 piksel saða itiyoruz (+ 15.f)
+    float textPadding = 15.f;
+
+    ownerText.setPosition(sf::Vector2f(panelX + textPadding, panelY + 5.f));
+    typeText.setPosition(sf::Vector2f(panelX + textPadding, panelY + 35.f));
+    statsText.setPosition(sf::Vector2f(panelX + textPadding, panelY + 65.f));
+
+    // End Turn Butonu: Sað Alt Köþe
+    endTurnButton.setPosition(sf::Vector2f(w - 170.f, h - 70.f));
+    endTurnText.setPosition(endTurnButton.getPosition() + sf::Vector2f(18.f, 10.f));
+
+    // 1. Yazý Sað Üstte (Ekran kenarýndan biraz içeride)
+    turnIndicatorText.setPosition(sf::Vector2f(w - 150.f, 30.f));
+
+    // 2. Beyaz Kare: Yazýnýn hemen altýna (Yazýnýn Y konumu + 40px aþaðýsý)
+    turnColorBox.setPosition(sf::Vector2f(w - 150.f, 70.f));
+
+    // 3. Renkli Daire: Tam olarak Karenin üstüne (Merkezleri ayný olduðu için)
+    turnColorCircle.setPosition(turnColorBox.getPosition());
+
+    // 1. Yazýyý tekrar Beyaz yap (Eski haline döndür)
+    turnIndicatorText.setFillColor(sf::Color::White);
+    turnIndicatorText.setCharacterSize(24);
+
+    // 2. Beyaz Kare (Arka Plan)
+    turnColorBox.setSize(sf::Vector2f(40.f, 40.f)); // 40x40 bir kare
+    turnColorBox.setFillColor(sf::Color::White);
+    turnColorBox.setOutlineColor(sf::Color::Black);
+    turnColorBox.setOutlineThickness(1.f);
+
+    // Karenin merkezini (Origin) ortasýna alalým ki konumlandýrmak kolay olsun
+    turnColorBox.setOrigin(sf::Vector2f(20.f, 20.f));
+
+    // 3. Renkli Daire (Gösterge)
+    turnColorCircle.setRadius(15.f); // Karenin içine sýðacak boyutta (40px kareye 30px daire)
+    turnColorCircle.setPointCount(50); // Pürüzsüz yuvarlak olsun
+
+    // Dairenin merkezini ortasýna al
+    turnColorCircle.setOrigin(sf::Vector2f(15.f, 15.f));
+    // Text origin ayarý (initGameUI içinde yoksa burada yapmalýsýn ki tam ortalansýn)
+    sf::FloatRect textBounds = turnIndicatorText.getLocalBounds();
+    turnIndicatorText.setOrigin(textBounds.position + textBounds.size / 2.f);
+}
+
 void UIManager::drawGameOverScreen(sf::RenderWindow& window, std::string winnerName)
 {
     // Önce paneli çiz
@@ -258,12 +393,17 @@ void UIManager::drawSetupMenu(sf::RenderWindow& window, GameMode selectedMode, i
         window.draw(btnDecHuman);
         window.draw(txtHumanCount);
         window.draw(btnIncHuman);
+
+        window.draw(txtDecHuman);
+        window.draw(txtIncHuman);
     }
     if (showAI) {
         window.draw(labelAI);
         window.draw(btnDecAI);
         window.draw(txtAICount);
         window.draw(btnIncAI);
+        window.draw(txtDecAI);
+		window.draw(txtIncAI);
     }
 }
 
@@ -324,7 +464,7 @@ void UIManager::setEndTurnButtonActive(bool isActive)
     }
 }
 
-void UIManager::updateGameUI(Soldier* selectedSoldier, const std::string& currentPlayerName)
+void UIManager::updateGameUI(Soldier* selectedSoldier, Owner* currentOwner)
 {
     if (selectedSoldier != nullptr)
     {
@@ -351,19 +491,29 @@ void UIManager::updateGameUI(Soldier* selectedSoldier, const std::string& curren
         statsText.setString("");
     }
 
-    turnIndicatorText.setString("Current Turn: " + currentPlayerName);
+    if (currentOwner != nullptr)
+    {
+        turnIndicatorText.setString("Current Turn: " + currentOwner->name);
+
+        turnColorCircle.setFillColor(currentOwner->color);
+
+        // Yazý içeriði deðiþtiði için Origin'i tekrar güncellemek iyi olur
+        sf::FloatRect bounds = turnIndicatorText.getLocalBounds();
+        turnIndicatorText.setOrigin(bounds.position + bounds.size / 2.f);
+    }
 }
 
 void UIManager::drawGameUI(sf::RenderWindow& window)
 {
     window.draw(infoPanel);
-
     window.draw(ownerText);
     window.draw(typeText);
     window.draw(statsText);
 
-    // Yeni UI elemanlarýný çiz.
     window.draw(endTurnButton);
     window.draw(endTurnText);
+
     window.draw(turnIndicatorText);
+    window.draw(turnColorBox);      // Beyaz Kare
+    window.draw(turnColorCircle);   // Renkli Daire
 }
