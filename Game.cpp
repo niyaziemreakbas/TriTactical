@@ -7,17 +7,15 @@ Game::Game()
     : window(sf::VideoMode({ 1366, 768 }), "SFML Strategy Game"),
     gameManager(window.getSize().x, window.getSize().y, uiManager)
 {
-    // Kurucu gövdesi artýk boþ.
 }
 
 void Game::run()
 {
-    clock.restart(); // Döngü baþlamadan saati sýfýrla.
+    clock.restart();
     while (window.isOpen())
     {
         processEvents();
 
-        // Saati yeniden baþlat ve geçen süreyi saniye olarak al.
         float dt = clock.restart().asSeconds();
         update(dt);
 
@@ -33,18 +31,13 @@ void Game::processEvents()
 
         if (const auto* resized = event->getIf<sf::Event::Resized>())
         {
-            // 1. Yeni boyutlarý al
             unsigned int w = resized->size.x;
             unsigned int h = resized->size.y;
 
-            // 2. View (Kamera) Ayarý: Görüntü bozulmasýn, alan geniþlesin
             sf::FloatRect visibleArea({ 0.f, 0.f }, { static_cast<float>(w), static_cast<float>(h) });
             window.setView(sf::View(visibleArea));
 
-            // 3. UI Elemanlarýný yeni boyuta göre hizala
             uiManager.onResize(w, h);
-
-            // 4. Haritayý tekrar ortala
             gameManager.onWindowResize(w, h);
         }
 
@@ -93,7 +86,6 @@ void Game::processEvents()
                     MenuAction action = uiManager.handleSetupClick(mx, my);
 
                     if (action == MenuAction::StartGame) {
-                        // SAYILARI GÖNDER
                         gameManager.startGame(selectedMode, numHumans, numAI);
                         currentState = AppState::Gameplay;
                     }
@@ -101,8 +93,8 @@ void Game::processEvents()
                         currentState = AppState::MainMenu;
                     }
                     // Increase
-                    else if (action == MenuAction::IncHuman && numHumans < 4) numHumans++;
-                    else if (action == MenuAction::IncAI && numAI < 20) numAI++;
+                    else if (action == MenuAction::IncHuman && numHumans < 8) numHumans++;
+                    else if (action == MenuAction::IncAI && numAI < 8) numAI++;
 
                     // Decrease
                     else if (action == MenuAction::DecHuman)
@@ -148,14 +140,13 @@ void Game::processEvents()
             }
         }
 
-        // ESC tuþu ile geri gelme mantýðý
+		// Return to Main Menu with Escape key
         if (const auto* key = event->getIf<sf::Event::KeyPressed>()) {
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Escape)) {
                 if (currentState == AppState::Gameplay) {
                     currentState = AppState::MainMenu;
                 }
                 else if (currentState == AppState::GameSetup) {
-					//resetPlayerNums();
                     currentState = AppState::MainMenu;
                 }
             }
@@ -169,7 +160,6 @@ void Game::update(float dt)
     {
         gameManager.update(dt);
 
-        // Oyun bitti mi kontrol et?
         if (gameManager.isGameOver())
         {
             currentState = AppState::GameOver;
@@ -204,10 +194,4 @@ void Game::render()
     }
 
     window.display();
-}
-
-void Game::resetPlayerNums()
-{
-	numHumans = 0;
-	numAI = 0;
 }

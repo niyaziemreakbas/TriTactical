@@ -6,7 +6,7 @@
 class UIManager
 {
 public:
-    UIManager(); 
+    UIManager();
 
     void drawMainMenu(sf::RenderWindow& window);
     void drawSetupMenu(sf::RenderWindow& window, GameMode selectedMode, int humanCount, int aiCount);
@@ -20,7 +20,7 @@ public:
 
     bool isEndTurnButtonClicked(sf::Vector2i mousePos);
 
-	void LoadFont(sf::Font& font, std::string str);
+    void LoadFont(sf::Font& font, std::string str);
 
     void setEndTurnButtonActive(bool isActive);
 
@@ -29,15 +29,23 @@ public:
 
     void onResize(unsigned int width, unsigned int height);
 
+    void resizeMainMenu(float width, float height);
+    void resizeSetupMenu(float width, float height);
+    void resizeGameUI(float width, float height);
+    void resizeGameOverUI(float width, float height);
+
+    void setupText(sf::Text& txt, int size, sf::Color color, std::string str = "");
+    void setupSmallBtn(sf::RectangleShape& btn, sf::Text& txt, std::string label);
+
 private:
     sf::Font font;
 
-	// Main Menu UI
+    // Main Menu UI
     sf::Text titleText;
     sf::RectangleShape btnPvP, btnPvAI, btnAIvAI;
     sf::Text txtPvP, txtPvAI, txtAIvAI;
 
-	// Setup Menu UI
+    // Setup Menu UI
     sf::Text setupTitleText;
     sf::Text setupInfoText;
     sf::RectangleShape btnStartGame, btnBack;
@@ -57,19 +65,20 @@ private:
     sf::RectangleShape endTurnButton;
     sf::Text endTurnText;
     sf::Text turnIndicatorText;
-    sf::RectangleShape turnColorBox;   // Beyaz Kare
-    sf::CircleShape turnColorCircle;   // Renkli Daire
+    sf::RectangleShape ownerColorBackground;   // Beyaz Kare
+    sf::CircleShape ownerColorCircle;   // Renkli Daire
 
     // --- Game Over UI ---
     sf::RectangleShape gameOverPanel;
     sf::Text txtGameOverTitle;
     sf::Text txtWinnerName;
     sf::RectangleShape btnReturnMain;
-    sf::Text txtReturnMain; 
+    sf::Text txtReturnMain;
     sf::RectangleShape btnRestart;
     sf::Text txtRestart;
 
     void initMenuUI();
     void initGameUI();
-    void createBtn(sf::RectangleShape& btn, sf::Text& txt, std::string str, float y, sf::Color color);
+    void createBtn(sf::RectangleShape& btn, sf::Text& txt, std::string str, sf::Color color);
+    void alignButton(sf::RectangleShape& btn, sf::Text& txt, float x, float y);
 };

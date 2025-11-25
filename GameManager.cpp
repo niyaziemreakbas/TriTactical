@@ -43,12 +43,12 @@ void GameManager::startGame(GameMode mode, int numHumans, int numBots)
         sf::Color(128, 0, 128), // Purple
     };
 
-    // Renkleri karýþtýr (Shuffle)
+    // Shuffle colors
     std::random_device rd;
     std::mt19937 g(rd());
     std::shuffle(colors.begin(), colors.end(), g);
 
-    // 1. Temizlik
+	// Clear previous game data
     owners.clear();
     selectedSoldier = nullptr;
     moveableCells.clear();
@@ -93,28 +93,24 @@ void GameManager::startGame(GameMode mode, int numHumans, int numBots)
         height = std::min(MAX_HEIGHT, 8 + totalPlayers);
     }
 
-    std::cout << "Map Generated: " << width << "x" << height << " (Target Area: " << targetArea << ")\n";
-
-    // Haritayý yeniden oluþtur
     m_map.regenerate(width, height, 1366, 768);
 
     int colorIndex = 0;
 
+	// Instantiate Human Owners
     for (int i = 0; i < numHumans; ++i) {
         std::string name = "Player " + std::to_string(i + 1);
 
-        // Listeden sýradaki rengi ver
         sf::Color assignedColor = colors[colorIndex % colors.size()];
         colorIndex++;
 
         owners.push_back(std::make_unique<PlayerOwner>(name, assignedColor));
     }
 
-    // --- BOTLARI OLUÞTUR ---
+	// Instantiate Bot Owners
     for (int i = 0; i < numBots; ++i) {
         std::string name = "Bot " + std::to_string(i + 1);
 
-        // Listeden sýradaki rengi ver
         sf::Color assignedColor = colors[colorIndex % colors.size()];
         colorIndex++;
 
@@ -124,7 +120,6 @@ void GameManager::startGame(GameMode mode, int numHumans, int numBots)
     // 4. Askerleri Rastgele Daðýt
     for (auto& owner : owners)
     {
-        // Her oyuncuya 1 Üçgen, 1 Daire, 1 Kare verelim
         Soldier::Type types[] = { Soldier::Type::Triangle, Soldier::Type::Circle, Soldier::Type::Square };
 
         for (auto type : types)
@@ -134,7 +129,6 @@ void GameManager::startGame(GameMode mode, int numHumans, int numBots)
         }
     }
 
-    // 5. Tur Sistemini Baþlat
     currentPlayerIndex = 0;
 
     // AI kontrolü
@@ -665,5 +659,4 @@ void GameManager::processAITurn()
 void GameManager::onWindowResize(unsigned int w, unsigned int h)
 {
     m_map.updateMapPosition(w, h);
-    // UI Manager'ý Game.cpp'den güncelleyeceðiz, buraya gerek yok.
 }
