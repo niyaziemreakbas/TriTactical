@@ -10,19 +10,71 @@ GameManager::GameManager(unsigned int windowWidth, unsigned int windowHeight, UI
     : m_map(windowWidth, windowHeight),
     uiManager(uiMgr)
 {
-    // 1. Pointer'larý güvenli hale getir (Crash olmamasý için kritik)
-    selectedSoldier = nullptr;
+    if (!texTriangle.loadFromFile("Assets/scissors.png")) std::cerr << "Triangle texture not found!\n";
+    if (!texCircle.loadFromFile("Assets/paper.png")) std::cerr << "Circle texture not found!\n";
+    if (!texSquare.loadFromFile("Assets/rock.png")) std::cerr << "Square texture not found!\n";
 
-    // 2. Listeleri temizle (std::vector zaten boþ baþlar ama emin olalým)
+    std::cout << "; Mipmap Generation for Triangle : " + texTriangle.generateMipmap();
+    texTriangle.setSmooth(true);
+
+    std::cout << "; Mipmap Generation for Circle : " + texCircle.generateMipmap();
+    texCircle.setSmooth(true);
+
+    std::cout << "; Mipmap Generation for Square : " + texSquare.generateMipmap();
+    texSquare.setSmooth(true);
+
+    const std::string fragmentShader = R"(
+    uniform sampler2D texture;
+    uniform vec4 u_borderColor;
+    uniform vec2 u_textureSize; // Resmin geniþlik ve yüksekliði lazým
+
+    void main()
+    {
+        // Þu anki pikselin koordinatý
+        vec2 coord = gl_TexCoord[0].xy;
+        
+        // Þu anki pikselin rengini al
+        vec4 pixel = texture2D(texture, coord);
+        
+        // Eðer piksel zaten doluysa (görselin kendisiyse), onu olduðu gibi çiz
+        if (pixel.a > 0.5) {
+            gl_FragColor = pixel;
+            return;
+        }
+
+        // Eðer piksel boþsa, etrafýna bakalým (Kenar mý?)
+        float alpha = 0.0;
+        
+        // Çerçeve kalýnlýðý (pixel cinsinden adým boyutu)
+        // 1.0 / size = 1 piksel boyutu. Bunu 2.0 veya 3.0 ile çarparsan kalýnlaþýr.
+        vec2 stepSize = 1.0 / u_textureSize * 2.0; 
+
+        // 8 yöne bak (Sað, Sol, Üst, Alt ve Çaprazlar)
+        alpha += texture2D(texture, coord + vec2(stepSize.x, 0.0)).a;
+        alpha += texture2D(texture, coord + vec2(-stepSize.x, 0.0)).a;
+        alpha += texture2D(texture, coord + vec2(0.0, stepSize.y)).a;
+        alpha += texture2D(texture, coord + vec2(0.0, -stepSize.y)).a;
+        
+        // Eðer komþulardan herhangi biri doluysa (alpha toplamý > 0), burasý kenardýr.
+        if (alpha > 0.0) {
+            gl_FragColor = u_borderColor;
+        } else {
+            gl_FragColor = vec4(0.0, 0.0, 0.0, 0.0); // Tamamen þeffaf
+        }
+    }
+)";
+
+    // Shader'ý yükle
+    if (!outlineShader.loadFromMemory(fragmentShader, sf::Shader::Type::Fragment))
+    {
+        std::cerr << "Shader yuklenemedi!\n";
+    }
+
+    selectedSoldier = nullptr;
     owners.clear();
     moveableCells.clear();
     attackableCells.clear();
-
-    // 3. Sýra deðiþkenini sýfýrla
     currentPlayerIndex = 0;
-
-    // 4. Rastgelelik için seed ayarý (Eðer rand() kullanýlýyorsa diye, mt19937 için gerekmez ama zararý yok)
-    std::srand(static_cast<unsigned int>(time(nullptr)));
 }
 
 void GameManager::startGame(GameMode mode, int numHumans, int numBots)
@@ -56,7 +108,7 @@ void GameManager::startGame(GameMode mode, int numHumans, int numBots)
 
     int totalPlayers = numHumans + numBots;
 
-    // Oyuncu baþýna 9 ile 12 arasýnda rastgele bir alan belirle (Böylece harita sýkýþýk veya ferah olabilir)
+    // Oyuncu baþýna 9 ile 12 arasýnda rastgele bir alan belirle
     std::uniform_int_distribution<> tilePerPlayerDist(8, 12);
     int tilesPerPlayer = tilePerPlayerDist(g); // 'g' yukarýdaki random generator
 
@@ -124,8 +176,18 @@ void GameManager::startGame(GameMode mode, int numHumans, int numBots)
 
         for (auto type : types)
         {
+            sf::Texture* currentTex = nullptr;
+            switch (type) {
+            case Soldier::Type::Triangle: currentTex = &texTriangle; break;
+            case Soldier::Type::Circle:   currentTex = &texCircle; break;
+            case Soldier::Type::Square:   currentTex = &texSquare; break;
+            }
+
             sf::Vector2i spawnPos = findRandomEmptyCell();
-            owner->soldiers.emplace_back(owner.get(), type, spawnPos);
+
+            if (currentTex) {
+                owner->soldiers.emplace_back(owner.get(), type, spawnPos, *currentTex);
+            }
         }
     }
 
@@ -403,7 +465,7 @@ void GameManager::draw(sf::RenderWindow& window)
     for (auto& owner : owners) {
         for (auto& soldier : owner->soldiers) {
             // DEÐÝÞÝKLÝK: Eski, parametreli haliyle çaðýr.
-            soldier.draw(window, tileSize, mapOffset.x, mapOffset.y);
+            soldier.draw(window, tileSize, mapOffset.x, mapOffset.y, &outlineShader);
         }
     }
 

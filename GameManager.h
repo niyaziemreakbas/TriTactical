@@ -59,4 +59,9 @@ private:
 
     std::vector<sf::Vector2i> moveableCells;
     std::vector<sf::Vector2i> attackableCells;
+
+    sf::Texture texTriangle;
+    sf::Texture texCircle;
+    sf::Texture texSquare;
+    sf::Shader outlineShader;
 };
