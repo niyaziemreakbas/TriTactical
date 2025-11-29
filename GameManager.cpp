@@ -10,71 +10,62 @@ GameManager::GameManager(unsigned int windowWidth, unsigned int windowHeight, UI
     : m_map(windowWidth, windowHeight),
     uiManager(uiMgr)
 {
-    if (!texTriangle.loadFromFile("Assets/scissors.png")) std::cerr << "Triangle texture not found!\n";
-    if (!texCircle.loadFromFile("Assets/paper.png")) std::cerr << "Circle texture not found!\n";
-    if (!texSquare.loadFromFile("Assets/rock.png")) std::cerr << "Square texture not found!\n";
 
-    std::cout << "; Mipmap Generation for Triangle : " + texTriangle.generateMipmap();
-    texTriangle.setSmooth(true);
-
-    std::cout << "; Mipmap Generation for Circle : " + texCircle.generateMipmap();
-    texCircle.setSmooth(true);
-
-    std::cout << "; Mipmap Generation for Square : " + texSquare.generateMipmap();
-    texSquare.setSmooth(true);
-
-    const std::string fragmentShader = R"(
-    uniform sampler2D texture;
-    uniform vec4 u_borderColor;
-    uniform vec2 u_textureSize; // Resmin geniþlik ve yüksekliði lazým
-
-    void main()
-    {
-        // Þu anki pikselin koordinatý
-        vec2 coord = gl_TexCoord[0].xy;
-        
-        // Þu anki pikselin rengini al
-        vec4 pixel = texture2D(texture, coord);
-        
-        // Eðer piksel zaten doluysa (görselin kendisiyse), onu olduðu gibi çiz
-        if (pixel.a > 0.5) {
-            gl_FragColor = pixel;
-            return;
-        }
-
-        // Eðer piksel boþsa, etrafýna bakalým (Kenar mý?)
-        float alpha = 0.0;
-        
-        // Çerçeve kalýnlýðý (pixel cinsinden adým boyutu)
-        // 1.0 / size = 1 piksel boyutu. Bunu 2.0 veya 3.0 ile çarparsan kalýnlaþýr.
-        vec2 stepSize = 1.0 / u_textureSize * 2.0; 
-
-        // 8 yöne bak (Sað, Sol, Üst, Alt ve Çaprazlar)
-        alpha += texture2D(texture, coord + vec2(stepSize.x, 0.0)).a;
-        alpha += texture2D(texture, coord + vec2(-stepSize.x, 0.0)).a;
-        alpha += texture2D(texture, coord + vec2(0.0, stepSize.y)).a;
-        alpha += texture2D(texture, coord + vec2(0.0, -stepSize.y)).a;
-        
-        // Eðer komþulardan herhangi biri doluysa (alpha toplamý > 0), burasý kenardýr.
-        if (alpha > 0.0) {
-            gl_FragColor = u_borderColor;
-        } else {
-            gl_FragColor = vec4(0.0, 0.0, 0.0, 0.0); // Tamamen þeffaf
-        }
-    }
-)";
-
-    // Shader'ý yükle
-    if (!outlineShader.loadFromMemory(fragmentShader, sf::Shader::Type::Fragment))
-    {
-        std::cerr << "Shader yuklenemedi!\n";
-    }
 
     selectedSoldier = nullptr;
     owners.clear();
     moveableCells.clear();
     attackableCells.clear();
     currentPlayerIndex = 0;
+}
+
+void GameManager::loadResources()
+{
+    // Load Textures
+    if (!texTriangle.loadFromFile("Assets/scissors.png")) std::cerr << "Triangle texture missing!\n";
+    if (!texCircle.loadFromFile("Assets/paper.png")) std::cerr << "Circle texture missing!\n";
+    if (!texSquare.loadFromFile("Assets/rock.png")) std::cerr << "Square texture missing!\n";
+
+    texTriangle.setSmooth(true);
+    texCircle.setSmooth(true);
+    texSquare.setSmooth(true);
+
+    // Shader Code
+    const std::string fragmentShader = R"(
+    uniform sampler2D texture;
+    uniform vec4 u_borderColor;
+    uniform vec2 u_textureSize; 
+
+    void main()
+    {
+        vec2 coord = gl_TexCoord[0].xy;
+        vec4 pixel = texture2D(texture, coord);
+        
+        if (pixel.a > 0.5) {
+            gl_FragColor = pixel;
+            return;
+        }
+
+        float alpha = 0.0;
+        vec2 stepSize = 1.0 / u_textureSize * 2.0; 
+
+        alpha += texture2D(texture, coord + vec2(stepSize.x, 0.0)).a;
+        alpha += texture2D(texture, coord + vec2(-stepSize.x, 0.0)).a;
+        alpha += texture2D(texture, coord + vec2(0.0, stepSize.y)).a;
+        alpha += texture2D(texture, coord + vec2(0.0, -stepSize.y)).a;
+        
+        if (alpha > 0.0) {
+            gl_FragColor = u_borderColor;
+        } else {
+            gl_FragColor = vec4(0.0, 0.0, 0.0, 0.0);
+        }
+    }
+    )";
+
+    if (!outlineShader.loadFromMemory(fragmentShader, sf::Shader::Type::Fragment))
+    {
+        std::cerr << "Shader failed to load!\n";
+    }
 }
 
 void GameManager::startGame(GameMode mode, int numHumans, int numBots)
@@ -108,44 +99,7 @@ void GameManager::startGame(GameMode mode, int numHumans, int numBots)
 
     int totalPlayers = numHumans + numBots;
 
-    // Oyuncu baþýna 9 ile 12 arasýnda rastgele bir alan belirle
-    std::uniform_int_distribution<> tilePerPlayerDist(8, 12);
-    int tilesPerPlayer = tilePerPlayerDist(g); // 'g' yukarýdaki random generator
-
-    // Minimum harita boyutu (Çok küçük olmamasý için güvenlik)
-	int targetArea = totalPlayers * tilesPerPlayer;
-
-    // Harita sýnýrlarý
-    const int MAX_WIDTH = 16;
-    const int MAX_HEIGHT = 14;
-    const int MIN_DIM = 6;
-
-    // Geniþliði rastgele belirlemeye çalýþalým, Yüksekliði ona göre ayarlayalým
-    int width, height;
-
-    bool sizeFound = false;
-    for (int attempt = 0; attempt < 20; ++attempt) {
-        // Geniþliði Min ve Max arasýnda rastgele seç
-        std::uniform_int_distribution<> widthDist(MIN_DIM, MAX_WIDTH);
-        width = widthDist(g);
-
-        // Yüksekliði hesapla (Alan / Geniþlik)
-        height = targetArea / width;
-
-        // Yükseklik sýnýrlara uyuyor mu?
-        if (height >= MIN_DIM && height <= MAX_HEIGHT) {
-            sizeFound = true;
-            break;
-        }
-    }
-
-    // Eðer uygun boyut bulamazsa (çok nadir), varsayýlan güvenli bir boyut ata
-    if (!sizeFound) {
-        width = std::min(MAX_WIDTH, 8 + totalPlayers);
-        height = std::min(MAX_HEIGHT, 8 + totalPlayers);
-    }
-
-    m_map.regenerate(width, height, 1366, 768);
+	calculateAndGenerateMap(totalPlayers);
 
     int colorIndex = 0;
 
@@ -206,6 +160,21 @@ void GameManager::startGame(GameMode mode, int numHumans, int numBots)
 
     uiManager.updateGameUI(nullptr, owners[currentPlayerIndex].get());
 }
+
+void GameManager::calculateAndGenerateMap(int totalPlayers)
+{
+    const int MAX_DIM = 13;
+    const int MIN_DIM = 5;
+    const int TILES_PER_PLAYER = 10;
+
+    int targetArea = totalPlayers * TILES_PER_PLAYER;
+
+    int calculatedSide = std::sqrt(targetArea);
+    int side = std::max(MIN_DIM, std::min(calculatedSide, MAX_DIM));
+
+    m_map.regenerate(side, side, 1366, 768);
+}
+
 
 void GameManager::checkWinCondition()
 {

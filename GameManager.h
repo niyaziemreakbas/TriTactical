@@ -35,6 +35,9 @@ public:
 
     void onWindowResize(unsigned int w, unsigned int h);
 
+    void loadResources();
+    void calculateAndGenerateMap(int totalPlayers);
+
 private: 
     bool m_isGameOver = false;
     std::string m_winnerName = "";
