@@ -9,13 +9,10 @@ std::vector<sf::Vector2i> Pathfinder::findPath(const sf::Vector2i& start, const 
     int width = mapDims.x;
     int height = mapDims.y;
 
-    // BFS için gerekli yapýlar
-    std::queue<sf::Vector2i> frontier; // Gideceðimiz kareler kuyruðu
+    std::queue<sf::Vector2i> frontier;
     frontier.push(start);
 
-    // Nereden geldik? (Yolu geri çizmek için)
-    // cameFrom[x][y] = {x, y} (bir önceki kare)
-    // Bu matrisi -1, -1 ile doldurarak "ziyaret edilmedi" olarak baþlatýyoruz.
+    
     std::vector<std::vector<sf::Vector2i>> cameFrom(width, std::vector<sf::Vector2i>(height, { -1, -1 }));
 
     // Baþlangýç noktasýný iþaretle
@@ -23,7 +20,6 @@ std::vector<sf::Vector2i> Pathfinder::findPath(const sf::Vector2i& start, const 
 
     bool found = false;
 
-    // --- BFS ALGORÝTMASI ---
     while (!frontier.empty())
     {
         sf::Vector2i current = frontier.front();
@@ -36,7 +32,6 @@ std::vector<sf::Vector2i> Pathfinder::findPath(const sf::Vector2i& start, const 
             break;
         }
 
-        // 4 Yönlü Komþular (Sað, Sol, Aþaðý, Yukarý)
         sf::Vector2i directions[] = { {1, 0}, {-1, 0}, {0, 1}, {0, -1} };
 
         for (const auto& dir : directions)
@@ -50,7 +45,6 @@ std::vector<sf::Vector2i> Pathfinder::findPath(const sf::Vector2i& start, const 
             if (cameFrom[next.x][next.y] != sf::Vector2i(-1, -1)) continue;
 
             // 3. Engel kontrolü:
-            // Kural: Hücre boþ olmalý VEYA Hücre bizim hedefimiz olmalý (Düþmana saldýrmak için)
             bool isWalkable = (gameManager.getSoldierAt(next) == nullptr);
             bool isTarget = (next == target);
 
@@ -61,14 +55,13 @@ std::vector<sf::Vector2i> Pathfinder::findPath(const sf::Vector2i& start, const 
             }
         }
     }
-    // -----------------------
 
-    // --- YOLU GERÝ OLUÞTURMA (Backtracking) ---
+    // --- (Backtracking) ---
     std::vector<sf::Vector2i> path;
 
     if (!found)
     {
-        return path; // Yol bulunamadý, boþ dön.
+        return path;
     }
 
     sf::Vector2i current = target;
@@ -78,10 +71,9 @@ std::vector<sf::Vector2i> Pathfinder::findPath(const sf::Vector2i& start, const 
         current = cameFrom[current.x][current.y];
     }
 
-    // Yol þu an [Hedef, ..., Adým 1] þeklinde ters. Düzeltelim:
     std::reverse(path.begin(), path.end());
 
-    return path; // [Adým 1, Adým 2, ..., Hedef]
+    return path;
 }
 
 bool Pathfinder::isValid(const sf::Vector2i& pos, int width, int height)

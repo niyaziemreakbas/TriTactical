@@ -10,7 +10,7 @@ GameManager::GameManager(unsigned int windowWidth, unsigned int windowHeight, UI
     : m_map(windowWidth, windowHeight),
     uiManager(uiMgr)
 {
-
+    loadResources();
 
     selectedSoldier = nullptr;
     owners.clear();
@@ -40,20 +40,30 @@ void GameManager::loadResources()
     {
         vec2 coord = gl_TexCoord[0].xy;
         vec4 pixel = texture2D(texture, coord);
-        
+    
+        // Eðer piksel zaten resmin kendisiyse, olduðu gibi çiz ve çýk
         if (pixel.a > 0.5) {
             gl_FragColor = pixel;
             return;
         }
 
         float alpha = 0.0;
+        // Çizgi kalýnlýðý için yine ayný mantýðý kullanýyoruz
         vec2 stepSize = 1.0 / u_textureSize * 2.0; 
 
+        // --- ÖNCEKÝ KOD (4 YÖN: Sað, Sol, Yukarý, Aþaðý) ---
         alpha += texture2D(texture, coord + vec2(stepSize.x, 0.0)).a;
         alpha += texture2D(texture, coord + vec2(-stepSize.x, 0.0)).a;
         alpha += texture2D(texture, coord + vec2(0.0, stepSize.y)).a;
         alpha += texture2D(texture, coord + vec2(0.0, -stepSize.y)).a;
-        
+
+        // --- YENÝ EKLENEN KISIM (4 KÖÞEGEN: Çaprazlar) ---
+        alpha += texture2D(texture, coord + vec2(stepSize.x, stepSize.y)).a;   // Sað-Üst
+        alpha += texture2D(texture, coord + vec2(-stepSize.x, stepSize.y)).a;  // Sol-Üst
+        alpha += texture2D(texture, coord + vec2(stepSize.x, -stepSize.y)).a;  // Sað-Alt
+        alpha += texture2D(texture, coord + vec2(-stepSize.x, -stepSize.y)).a; // Sol-Alt
+    
+        // Eðer etraftaki 8 noktadan herhangi birinde resim varsa, burayý boya
         if (alpha > 0.0) {
             gl_FragColor = u_borderColor;
         } else {

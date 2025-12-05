@@ -92,24 +92,20 @@ bool AIOwner::processTurn(GameManager& gameManager)
         // 3. PATHFINDER ÝLE HAREKET ET
         if (finalDestination != sf::Vector2i(-1, -1) && finalDestination != soldier.gridPosition)
         {
-            // Pathfinder bize tüm yolu verir: [Adým1, Adým2, ..., Hedef]
             std::vector<sf::Vector2i> path = Pathfinder::findPath(soldier.gridPosition, finalDestination, gameManager);
 
             if (!path.empty())
             {
-                // Biz sadece yolun ÝLK ADIMINI atacaðýz.
-                // Çünkü her adýmdan sonra dünya deðiþebilir (savaþ vs.)
                 sf::Vector2i nextStep = path[0];
 
-                // Gideceðimiz yer boþ mu? (Pathfinder düþmaný hedef aldýðýnda son adým doludur)
                 if (gameManager.getSoldierAt(nextStep) == nullptr)
                 {
                     gameManager.executeMove(&soldier, nextStep);
-                    return true; // Bir hamle yapýldý, turu döndür.
+                    return true;
                 }
             }
         }
     }
 
-    return false; // Yapacak hamle kalmadý
+    return false;
 }
