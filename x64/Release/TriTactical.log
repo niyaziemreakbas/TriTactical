@@ -1,4 +1,20 @@
-﻿  Game.cpp
+﻿  AIOwner.cpp
+D:\CppProjects\TriTactical\TriTactical\include\SFML\System\Exception.hpp(41,47): warning C4275: dll olmayan class 'std::runtime_error' arabirimi dll arabirimi class 'sf::Exception' için taban olarak kullanıldı
+  ('AIOwner.cpp' kaynak dosyası derleniyor)
+      C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.43.34808\include\stdexcept(100,19):
+      'std::runtime_error' bildirimine bakın
+      D:\CppProjects\TriTactical\TriTactical\include\SFML\System\Exception.hpp(41,23):
+      'sf::Exception' bildirimine bakın
+  
+  CombatManager.cpp
+D:\CppProjects\TriTactical\TriTactical\include\SFML\System\Exception.hpp(41,47): warning C4275: dll olmayan class 'std::runtime_error' arabirimi dll arabirimi class 'sf::Exception' için taban olarak kullanıldı
+  ('CombatManager.cpp' kaynak dosyası derleniyor)
+      C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.43.34808\include\stdexcept(100,19):
+      'std::runtime_error' bildirimine bakın
+      D:\CppProjects\TriTactical\TriTactical\include\SFML\System\Exception.hpp(41,23):
+      'sf::Exception' bildirimine bakın
+  
+  Game.cpp
 D:\CppProjects\TriTactical\TriTactical\include\SFML\System\Exception.hpp(41,47): warning C4275: dll olmayan class 'std::runtime_error' arabirimi dll arabirimi class 'sf::Exception' için taban olarak kullanıldı
   ('Game.cpp' kaynak dosyası derleniyor)
       C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.43.34808\include\stdexcept(100,19):
@@ -14,9 +30,47 @@ D:\CppProjects\TriTactical\TriTactical\include\SFML\System\Exception.hpp(41,47):
       D:\CppProjects\TriTactical\TriTactical\include\SFML\System\Exception.hpp(41,23):
       'sf::Exception' bildirimine bakın
   
+D:\CppProjects\TriTactical\TriTactical\TriTactical\GameManager.cpp(150,24): warning C4244: 'başlatılıyor': 'double' - 'int' dönüşümü; veri kaybı olabilir
+D:\CppProjects\TriTactical\TriTactical\TriTactical\GameManager.cpp(460,66): warning C4267: 'bağımsız değişken': 'size_t' - '_Ty' dönüşümü; veri kaybı olabilir
+D:\CppProjects\TriTactical\TriTactical\TriTactical\GameManager.cpp(460,66): warning C4267:         with
+D:\CppProjects\TriTactical\TriTactical\TriTactical\GameManager.cpp(460,66): warning C4267:         [
+D:\CppProjects\TriTactical\TriTactical\TriTactical\GameManager.cpp(460,66): warning C4267:             _Ty=int
+D:\CppProjects\TriTactical\TriTactical\TriTactical\GameManager.cpp(460,66): warning C4267:         ]
+  GridCell.cpp
+D:\CppProjects\TriTactical\TriTactical\include\SFML\System\Exception.hpp(41,47): warning C4275: dll olmayan class 'std::runtime_error' arabirimi dll arabirimi class 'sf::Exception' için taban olarak kullanıldı
+  ('GridCell.cpp' kaynak dosyası derleniyor)
+      C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.43.34808\include\stdexcept(100,19):
+      'std::runtime_error' bildirimine bakın
+      D:\CppProjects\TriTactical\TriTactical\include\SFML\System\Exception.hpp(41,23):
+      'sf::Exception' bildirimine bakın
+  
   Map.cpp
 D:\CppProjects\TriTactical\TriTactical\include\SFML\System\Exception.hpp(41,47): warning C4275: dll olmayan class 'std::runtime_error' arabirimi dll arabirimi class 'sf::Exception' için taban olarak kullanıldı
   ('Map.cpp' kaynak dosyası derleniyor)
+      C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.43.34808\include\stdexcept(100,19):
+      'std::runtime_error' bildirimine bakın
+      D:\CppProjects\TriTactical\TriTactical\include\SFML\System\Exception.hpp(41,23):
+      'sf::Exception' bildirimine bakın
+  
+  Owner.cpp
+D:\CppProjects\TriTactical\TriTactical\include\SFML\System\Exception.hpp(41,47): warning C4275: dll olmayan class 'std::runtime_error' arabirimi dll arabirimi class 'sf::Exception' için taban olarak kullanıldı
+  ('Owner.cpp' kaynak dosyası derleniyor)
+      C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.43.34808\include\stdexcept(100,19):
+      'std::runtime_error' bildirimine bakın
+      D:\CppProjects\TriTactical\TriTactical\include\SFML\System\Exception.hpp(41,23):
+      'sf::Exception' bildirimine bakın
+  
+  PathFinder.cpp
+D:\CppProjects\TriTactical\TriTactical\include\SFML\System\Exception.hpp(41,47): warning C4275: dll olmayan class 'std::runtime_error' arabirimi dll arabirimi class 'sf::Exception' için taban olarak kullanıldı
+  ('PathFinder.cpp' kaynak dosyası derleniyor)
+      C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.43.34808\include\stdexcept(100,19):
+      'std::runtime_error' bildirimine bakın
+      D:\CppProjects\TriTactical\TriTactical\include\SFML\System\Exception.hpp(41,23):
+      'sf::Exception' bildirimine bakın
+  
+  Soldier.cpp
+D:\CppProjects\TriTactical\TriTactical\include\SFML\System\Exception.hpp(41,47): warning C4275: dll olmayan class 'std::runtime_error' arabirimi dll arabirimi class 'sf::Exception' için taban olarak kullanıldı
+  ('Soldier.cpp' kaynak dosyası derleniyor)
       C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.43.34808\include\stdexcept(100,19):
       'std::runtime_error' bildirimine bakın
       D:\CppProjects\TriTactical\TriTactical\include\SFML\System\Exception.hpp(41,23):
@@ -30,10 +84,18 @@ D:\CppProjects\TriTactical\TriTactical\include\SFML\System\Exception.hpp(41,47):
       D:\CppProjects\TriTactical\TriTactical\include\SFML\System\Exception.hpp(41,23):
       'sf::Exception' bildirimine bakın
   
+  UIManager.cpp
+D:\CppProjects\TriTactical\TriTactical\include\SFML\System\Exception.hpp(41,47): warning C4275: dll olmayan class 'std::runtime_error' arabirimi dll arabirimi class 'sf::Exception' için taban olarak kullanıldı
+  ('UIManager.cpp' kaynak dosyası derleniyor)
+      C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.43.34808\include\stdexcept(100,19):
+      'std::runtime_error' bildirimine bakın
+      D:\CppProjects\TriTactical\TriTactical\include\SFML\System\Exception.hpp(41,23):
+      'sf::Exception' bildirimine bakın
+  
   Kod üretiliyor
-  273 of 573 functions (47.6%) were compiled, the rest were copied from previous compilation.
-    9 functions were new in current compilation
-    43 functions had inline decision re-evaluated but remain unchanged
+  963 of 1069 functions (90.1%) were compiled, the rest were copied from previous compilation.
+    462 functions were new in current compilation
+    23 functions had inline decision re-evaluated but remain unchanged
   Kodun üretilmesi tamamlandı
   TriTactical.vcxproj -> D:\CppProjects\TriTactical\TriTactical\x64\Release\TriTactical.exe
   'pwsh.exe' is not recognized as an internal or external command,

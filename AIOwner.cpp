@@ -92,8 +92,7 @@ bool AIOwner::processTurn(GameManager& gameManager)
         // 3. PATHFINDER ÝLE HAREKET ET
         if (finalDestination != sf::Vector2i(-1, -1) && finalDestination != soldier.gridPosition)
         {
-            std::vector<sf::Vector2i> path = Pathfinder::findPath(soldier.gridPosition, finalDestination, gameManager);
-
+            std::vector<sf::Vector2i> path = Pathfinder::findPath(soldier, finalDestination, gameManager);
             if (!path.empty())
             {
                 sf::Vector2i nextStep = path[0];
