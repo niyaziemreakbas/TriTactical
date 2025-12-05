@@ -5,6 +5,7 @@
 #include <iostream>
 #include <string>
 #include "AIOwner.h"
+#include <algorithm>
 
 GameManager::GameManager(unsigned int windowWidth, unsigned int windowHeight, UIManager& uiMgr)
     : m_map(windowWidth, windowHeight),
@@ -21,61 +22,17 @@ GameManager::GameManager(unsigned int windowWidth, unsigned int windowHeight, UI
 
 void GameManager::loadResources()
 {
-    // Load Textures
-    if (!texTriangle.loadFromFile("Assets/scissors.png")) std::cerr << "Triangle texture missing!\n";
-    if (!texCircle.loadFromFile("Assets/paper.png")) std::cerr << "Circle texture missing!\n";
-    if (!texSquare.loadFromFile("Assets/rock.png")) std::cerr << "Square texture missing!\n";
+    // Triangle (Scissors)
+    if (!texTriangleBody.loadFromFile("Assets/scissors_body.png")) std::cerr << "Triangle Body texture missing!\n";
+    if (!texTriangleOutline.loadFromFile("Assets/scissors_outline.png")) std::cerr << "Triangle Outline texture missing!\n";
 
-    texTriangle.setSmooth(true);
-    texCircle.setSmooth(true);
-    texSquare.setSmooth(true);
+    // Circle (Paper)
+    if (!texCircleBody.loadFromFile("Assets/paper_body.png")) std::cerr << "Circle Body texture missing!\n";
+    if (!texCircleOutline.loadFromFile("Assets/paper_outline.png")) std::cerr << "Circle Outline texture missing!\n";
 
-    // Shader Code
-    const std::string fragmentShader = R"(
-    uniform sampler2D texture;
-    uniform vec4 u_borderColor;
-    uniform vec2 u_textureSize; 
-
-    void main()
-    {
-        vec2 coord = gl_TexCoord[0].xy;
-        vec4 pixel = texture2D(texture, coord);
-    
-        // Eðer piksel zaten resmin kendisiyse, olduðu gibi çiz ve çýk
-        if (pixel.a > 0.5) {
-            gl_FragColor = pixel;
-            return;
-        }
-
-        float alpha = 0.0;
-        // Çizgi kalýnlýðý için yine ayný mantýðý kullanýyoruz
-        vec2 stepSize = 1.0 / u_textureSize * 2.0; 
-
-        // --- ÖNCEKÝ KOD (4 YÖN: Sað, Sol, Yukarý, Aþaðý) ---
-        alpha += texture2D(texture, coord + vec2(stepSize.x, 0.0)).a;
-        alpha += texture2D(texture, coord + vec2(-stepSize.x, 0.0)).a;
-        alpha += texture2D(texture, coord + vec2(0.0, stepSize.y)).a;
-        alpha += texture2D(texture, coord + vec2(0.0, -stepSize.y)).a;
-
-        // --- YENÝ EKLENEN KISIM (4 KÖÞEGEN: Çaprazlar) ---
-        alpha += texture2D(texture, coord + vec2(stepSize.x, stepSize.y)).a;   // Sað-Üst
-        alpha += texture2D(texture, coord + vec2(-stepSize.x, stepSize.y)).a;  // Sol-Üst
-        alpha += texture2D(texture, coord + vec2(stepSize.x, -stepSize.y)).a;  // Sað-Alt
-        alpha += texture2D(texture, coord + vec2(-stepSize.x, -stepSize.y)).a; // Sol-Alt
-    
-        // Eðer etraftaki 8 noktadan herhangi birinde resim varsa, burayý boya
-        if (alpha > 0.0) {
-            gl_FragColor = u_borderColor;
-        } else {
-            gl_FragColor = vec4(0.0, 0.0, 0.0, 0.0);
-        }
-    }
-    )";
-
-    if (!outlineShader.loadFromMemory(fragmentShader, sf::Shader::Type::Fragment))
-    {
-        std::cerr << "Shader failed to load!\n";
-    }
+    // Square (Rock)
+    if (!texSquareBody.loadFromFile("Assets/rock_body.png")) std::cerr << "Square Body texture missing!\n";
+    if (!texSquareOutline.loadFromFile("Assets/rock_outline.png")) std::cerr << "Square Outline texture missing!\n";
 }
 
 void GameManager::startGame(GameMode mode, int numHumans, int numBots)
@@ -140,17 +97,28 @@ void GameManager::startGame(GameMode mode, int numHumans, int numBots)
 
         for (auto type : types)
         {
-            sf::Texture* currentTex = nullptr;
+            sf::Texture* bodyTex = nullptr;
+            sf::Texture* outlineTex = nullptr;
+
             switch (type) {
-            case Soldier::Type::Triangle: currentTex = &texTriangle; break;
-            case Soldier::Type::Circle:   currentTex = &texCircle; break;
-            case Soldier::Type::Square:   currentTex = &texSquare; break;
+            case Soldier::Type::Triangle:
+                bodyTex = &texTriangleBody;
+                outlineTex = &texTriangleOutline;
+                break;
+            case Soldier::Type::Circle:
+                bodyTex = &texCircleBody;
+                outlineTex = &texCircleOutline;
+                break;
+            case Soldier::Type::Square:
+                bodyTex = &texSquareBody;
+                outlineTex = &texSquareOutline;
+                break;
             }
 
             sf::Vector2i spawnPos = findRandomEmptyCell();
 
-            if (currentTex) {
-                owner->soldiers.emplace_back(owner.get(), type, spawnPos, *currentTex);
+            if (bodyTex && outlineTex) {
+                owner->soldiers.emplace_back(owner.get(), type, spawnPos, *bodyTex, *outlineTex);
             }
         }
     }
@@ -161,7 +129,7 @@ void GameManager::startGame(GameMode mode, int numHumans, int numBots)
     if (dynamic_cast<AIOwner*>(owners[0].get())) {
         currentGameState = GameState::AI_THINKING;
         uiManager.setEndTurnButtonActive(false);
-        processAITurn();
+        //processAITurn();
     }
     else {
         currentGameState = GameState::PLAYER_INPUT;
@@ -175,12 +143,12 @@ void GameManager::calculateAndGenerateMap(int totalPlayers)
 {
     const int MAX_DIM = 13;
     const int MIN_DIM = 5;
-    const int TILES_PER_PLAYER = 10;
+    const int TILES_PER_PLAYER = 16;
 
     int targetArea = totalPlayers * TILES_PER_PLAYER;
 
     int calculatedSide = std::sqrt(targetArea);
-    int side = std::max(MIN_DIM, std::min(calculatedSide, MAX_DIM));
+    int side = std::clamp(calculatedSide, MIN_DIM, MAX_DIM);
 
     m_map.regenerate(side, side, 1366, 768);
 }
@@ -259,10 +227,10 @@ void GameManager::checkWinCondition()
             else
             {
                 // Parantez içinde kazanma sebebini yazalým
-                m_winnerName = leaderName + " (Army Size)";
+                m_winnerName = " Winner: " + leaderName + " (Army Size)";
             }
 
-            std::cout << "GAME OVER! Stalemate resolved. Winner: " << m_winnerName << "\n";
+            std::cout << "GAME OVER! Stalemate resolved." << m_winnerName << "\n";
         }
     }
 }
@@ -279,7 +247,7 @@ void GameManager::update(float dt)
     switch (currentGameState)
     {
     case GameState::PLAYER_INPUT:
-        // Oyuncu týklamasý bekleniyor (handleClick içinde iþleniyor)
+		// handle click handles player input
         break;
 
     case GameState::AI_THINKING:
@@ -304,14 +272,11 @@ void GameManager::update(float dt)
 
     case GameState::ANIMATING:
     {
-        // Animasyonlarýn bitip bitmediðini kontrol et.
         bool isAnyAnimationRunning = false;
         for (const auto& owner : owners) {
             for (const auto& soldier : owner->soldiers) {
-                // Soldier sýnýfýna public bir isAnimating deðiþkeni veya getter eklediðinden emin ol
-                // Senin kodunda 'isAnimating' private olabilir, getter lazým olabilir.
-                // Þimdilik senin animation logic'ine güveniyoruz.
-                if (soldier.IsAnimating()) { // Soldier.h'de bunu public yap veya getter kullan
+
+                if (soldier.IsAnimating()) { 
                     isAnyAnimationRunning = true;
                     break;
                 }
@@ -319,15 +284,15 @@ void GameManager::update(float dt)
             if (isAnyAnimationRunning) break;
         }
 
-        // Eðer animasyonlar bittiyse...
         if (!isAnyAnimationRunning) {
-            // Tekrar sýranýn kimde olduðuna bak.
-            // Eðer YZ sýrasýysa, YZ düþünmeye devam etmeli (belki baþka hamlesi vardýr).
+
+			// If the current player is AI, go to AI_THINKING
             if (dynamic_cast<AIOwner*>(owners[currentPlayerIndex].get())) {
                 currentGameState = GameState::AI_THINKING;
             }
+
+			// Otherwise, go to PLAYER_INPUT
             else {
-                // Oyuncu ise (oyuncu animasyonu bittiyse) input'a dön
                 currentGameState = GameState::PLAYER_INPUT;
             }
         }
@@ -441,10 +406,10 @@ void GameManager::draw(sf::RenderWindow& window)
     // Askerleri çiz (offset ve tileSize'ý haritadan al)
     const sf::Vector2f mapOffset = m_map.getMapOffset();
     const float tileSize = m_map.getTileSize();
+
     for (auto& owner : owners) {
         for (auto& soldier : owner->soldiers) {
-            // DEÐÝÞÝKLÝK: Eski, parametreli haliyle çaðýr.
-            soldier.draw(window, tileSize, mapOffset.x, mapOffset.y, &outlineShader);
+            soldier.draw(window, tileSize, mapOffset.x, mapOffset.y);
         }
     }
 

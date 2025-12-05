@@ -11,7 +11,7 @@ public:
     // Square > Triangle > Circle > Square
     enum class Type { Square, Circle, Triangle };
 
-    Soldier(Owner* owner, Type type, sf::Vector2i gridPosition, const sf::Texture& texture);
+    Soldier(Owner* p_owner, Type p_type, sf::Vector2i p_gridPosition, const sf::Texture& bodyTex, const sf::Texture& outlineTex);
 
     Owner* owner;
     Type type;
@@ -19,8 +19,7 @@ public:
 
     void toggleSelection();
 
-    void draw(sf::RenderWindow& window, float tileSize, float offsetX, float offsetY, sf::Shader* shader = nullptr);
-
+    void draw(sf::RenderWindow& window, float tileSize, float offsetX, float offsetY);
     bool getSelectState();
 
     void resetMovementPoints();
@@ -46,10 +45,10 @@ private:
     int movementPoints = 3;
 	int currentMovementPoints = movementPoints;
 
-    sf::Sprite sprite;
+    sf::Sprite bodySprite;    
+    sf::Sprite outlineSprite;
 
     bool isSelected = false;
-    //sf::CircleShape selectionHighlight;
 
 	// Animation members
     bool isAnimating = false;      

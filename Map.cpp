@@ -6,8 +6,8 @@ Map::Map(unsigned int windowWidth, unsigned int windowHeight)
     // generateMap fonksiyonunun içeriði buraya taþýndý.
     std::random_device rd;
     std::mt19937 gen(rd());
-    std::uniform_int_distribution<> distribWidth(8, 12);
-    std::uniform_int_distribution<> distribHeight(8, 12);
+    std::uniform_int_distribution<> distribWidth(8, 15);
+    std::uniform_int_distribution<> distribHeight(8, 14);
 
     mapWidth = distribWidth(gen);
     mapHeight = distribHeight(gen);

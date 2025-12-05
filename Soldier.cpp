@@ -2,14 +2,18 @@
 #include "Owner.h"
 #include <iostream>
 
-Soldier::Soldier(Owner* p_owner, Type p_type, sf::Vector2i p_gridPosition, const sf::Texture& texture)
-    : owner(p_owner), type(p_type), gridPosition(p_gridPosition), sprite(texture)
+Soldier::Soldier(Owner* p_owner, Type p_type, sf::Vector2i p_gridPosition, const sf::Texture& bodyTex, const sf::Texture& outlineTex)
+    : owner(p_owner), type(p_type), gridPosition(p_gridPosition), bodySprite(bodyTex), outlineSprite(outlineTex)
 {
     resetMovementPoints();
-    
-    //sprite.setTexture(texture);
-    sf::Vector2u texSize = texture.getSize();
-    sprite.setOrigin(sf::Vector2f(texSize.x / 2.f, texSize.y / 2.f));
+
+    // Body (Gövde) Merkezi
+    sf::Vector2u bodySize = bodyTex.getSize();
+    bodySprite.setOrigin(sf::Vector2f(bodySize.x / 2.f, bodySize.y / 2.f));
+
+    // Outline (Çerçeve) Merkezi
+    sf::Vector2u outSize = outlineTex.getSize();
+    outlineSprite.setOrigin(sf::Vector2f(outSize.x / 2.f, outSize.y / 2.f));
 }
 
 //Anim Funcs
@@ -42,42 +46,33 @@ void Soldier::update(float dt)
     }
 }
 
-void Soldier::draw(sf::RenderWindow& window, float tileSize, float offsetX, float offsetY, sf::Shader* shader)
+void Soldier::draw(sf::RenderWindow& window, float tileSize, float offsetX, float offsetY)
 {
-    float scaleRatio = 0.02f;
-    float outlineFactor = 1.2f;
-    sf::Vector2u texSize = sprite.getTexture().getSize();
+    float scaleRatio = 0.02f; // Görselin boyutuna göre bunu ayarlayabilirsin
 
-    if (shader)
-    {
-        // 1. Outline Rengi (Takým Rengi)
-        shader->setUniform("u_borderColor", sf::Glsl::Vec4(owner->color));
-
-        // 2. Resim Boyutu (Shader'ýn piksel hesabýný yapabilmesi için þart)
-        shader->setUniform("u_textureSize", sf::Vector2f(float(texSize.x), float(texSize.y)));
-
-        shader->setUniform("texture", sf::Shader::CurrentTexture);
-
-        window.draw(sprite, shader);
-    }
-
-    // 2. KATMAN: Asýl Görsel (Ön Plan)
-    sprite.setScale({ scaleRatio, scaleRatio });
-    sprite.setColor(sf::Color::White); // Beyaz = Orijinal resim renkleri
-    window.draw(sprite);
-
+    // 1. Pozisyonu Hesapla (Animasyonlu veya Sabit)
+    sf::Vector2f drawPos;
     if (isAnimating)
     {
-        sprite.setPosition(pixelPosition);
+        drawPos = pixelPosition;
     }
     else
     {
         float pixelX = offsetX + (gridPosition.x * tileSize) + (tileSize / 2);
         float pixelY = offsetY + (gridPosition.y * tileSize) + (tileSize / 2);
-        sprite.setPosition(sf::Vector2f(pixelX, pixelY));
+        drawPos = sf::Vector2f(pixelX, pixelY);
     }
 
-    window.draw(sprite);
+    outlineSprite.setPosition(drawPos);
+    outlineSprite.setScale(sf::Vector2f(scaleRatio, scaleRatio));
+    if (owner) {
+        outlineSprite.setColor(owner->color);
+    }
+    window.draw(outlineSprite);
+
+    bodySprite.setPosition(drawPos);
+    bodySprite.setScale(sf::Vector2f(scaleRatio, scaleRatio));
+    window.draw(bodySprite);
 }
 
 bool Soldier::moveTo(const sf::Vector2i& newPosition)
