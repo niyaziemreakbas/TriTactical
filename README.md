@@ -5,6 +5,7 @@
 Tri-Tactical is a strategy game that uses the classic Rock-Paper-Scissors mechanic onto a grid-based arena. Players leads soldiers consisting of three unit types with the goal of eliminating opponents by converting their units to own side.
 
 **Extendable Features in System**
+
 Creating new class for button, making its more modular to new features like 
 
 Refactor GameManager (I know it contains too many things for now. It can be separated to FightManager or StateManager)
