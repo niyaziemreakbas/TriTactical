@@ -13,4 +13,5 @@ Refactor GameManager (I know it contains too many things for now. It can be sepa
 Instead calculating path everytime, soldier check and validate path and use it again.
 
 **Itch.io Link :** https://emreakbas.itch.io/tritactical
+
 **Game Design Document (GDD) :** https://docs.google.com/document/d/1CMzOZnjDGlb0S9j5bVHALLk5KzIVSzwz2pY3Z4Z3Izc/edit?usp=sharing
