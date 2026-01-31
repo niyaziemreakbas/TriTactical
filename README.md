@@ -17,7 +17,7 @@ Instead calculating path everytime, soldier check and validate path and use it a
 **Game Design Document (GDD) :** https://docs.google.com/document/d/1CMzOZnjDGlb0S9j5bVHALLk5KzIVSzwz2pY3Z4Z3Izc/edit?usp=sharing
 
 
-![oDT60f](https://github.com/user-attachments/assets/5d8524f7-d999-478d-9420-6ae09d112bcb)
-![V4hgul](https://github.com/user-attachments/assets/aa883633-fcb9-4ae4-a25c-e0e5aa9f9f23)
-![DJ9PvH](https://github.com/user-attachments/assets/2c5cd9e4-61ff-4c97-9bdb-9d88ea5d6c8e)
-![ekfmuP](https://github.com/user-attachments/assets/f5504eb7-9d09-4822-90b9-c5b598ca2235)
+![GiqNh2](https://github.com/user-attachments/assets/406b532c-14b6-4fd6-9d17-c9edc4d4f732)
+![k974gy](https://github.com/user-attachments/assets/56e9f91b-52a3-43bf-b06a-e969e713d48b)
+![VyphGP](https://github.com/user-attachments/assets/c5dc6cfa-75e5-4545-8a86-75939a3c40bc)
+![jGg_8Q](https://github.com/user-attachments/assets/3d8b7138-6bdc-4589-96fc-fa5cf7d2a384)
